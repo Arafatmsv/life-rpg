@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <!-- Replaced by the value of `--base-href` at build time. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <!-- viewport-fit=cover: draw under the notch / home indicator; the app reads
+       the safe-area insets itself (see web_safe_area.dart). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Life RPG — прокачивай персонажа, прокачивай себя в реальной жизни.">
+  <meta name="theme-color" content="#0B0C10">
+
+  <!-- iOS: installs from Safari via Share → Add to Home Screen. -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Life RPG">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>Life RPG</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #0B0C10; overscroll-behavior: none; }
+    #loader {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      color: #A6A9B3; font: 500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #loader img { width: 88px; height: 88px; border-radius: 22px; animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .55; transform: scale(.96); } }
+    @media (prefers-reduced-motion: reduce) { #loader img { animation: none; } }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <img src="icons/Icon-192.png" alt="">
+    <div>Загрузка мира…</div>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

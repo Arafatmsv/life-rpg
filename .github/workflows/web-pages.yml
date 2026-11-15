@@ -1,0 +1,68 @@
+# Builds the web app and publishes it to GitHub Pages:
+#   https://<user>.github.io/<repo>/
+# One-time setup: Settings → Pages → Source: "GitHub Actions".
+name: Web (GitHub Pages)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.27.2
+          channel: stable
+          cache: true
+
+      - name: Write env.json from secrets (optional)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          AUTH_REDIRECT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            printf '{"SUPABASE_URL":"%s","SUPABASE_ANON_KEY":"%s","AUTH_REDIRECT_URL":"%s"}' \
+              "$SUPABASE_URL" "$SUPABASE_ANON_KEY" "$AUTH_REDIRECT_URL" > env.json
+          else
+            echo '{}' > env.json
+          fi
+
+      - run: flutter pub get
+
+      - name: Tests
+        run: flutter test
+
+      - name: Build web
+        run: >
+          flutter build web --release
+          --base-href "/${{ github.event.repository.name }}/"
+          --dart-define-from-file=env.json
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
