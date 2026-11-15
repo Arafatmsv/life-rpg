@@ -612,7 +612,7 @@ class _SkillDetails extends ConsumerWidget {
           Row(children: [
             Icon(Icons.verified_rounded, color: c),
             const SizedBox(width: 8),
-            Text('Навык открыт', style: AppText.ui(15, weight: FontWeight.w800, color: c)),
+            Text('Навык открыт', style: AppText.ui(15, weight: FontWeight.w700, color: c)),
           ])
         else ...[
           RpgButton(

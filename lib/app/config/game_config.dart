@@ -24,32 +24,32 @@ class GameConfig {
     },
     this.customXpMinFactor = 0.5,
     this.customXpMaxFactor = 1.5,
-    this.goldPerXp = 0.5,
-    this.dailyXpSoftCap = 500,
+    this.goldPerXp = 0.25,
+    this.dailyXpSoftCap = 300,
     this.overCapFactor = 0.5,
-    this.dailyQuestGoldCap = 300,
-    this.streakBonusPerDay = 0.02,
-    this.streakBonusMax = 0.20,
+    this.dailyQuestGoldCap = 100,
+    this.streakBonusPerDay = 0.01,
+    this.streakBonusMax = 0.10,
     this.focusBonus = 0.10,
     this.skillBonusMax = 0.15,
-    this.disciplineShare = 0.25,
+    this.disciplineShare = 0.10,
     this.subtaskXp = 5,
     this.bossCheckInXp = 5,
-    this.dailyClearXp = 25,
-    this.dailyClearGold = 10,
-    this.levelRewardGoldBase = 50,
-    this.levelRewardGoldPerLevel = 10,
+    this.dailyClearXp = 10,
+    this.dailyClearGold = 5,
+    this.levelRewardGoldBase = 20,
+    this.levelRewardGoldPerLevel = 5,
     this.rarityGold = const {
-      Rarity.common: 25,
-      Rarity.rare: 75,
-      Rarity.epic: 200,
-      Rarity.legendary: 500,
-    },
-    this.rarityXp = const {
       Rarity.common: 10,
       Rarity.rare: 30,
-      Rarity.epic: 80,
-      Rarity.legendary: 150,
+      Rarity.epic: 75,
+      Rarity.legendary: 200,
+    },
+    this.rarityXp = const {
+      Rarity.common: 5,
+      Rarity.rare: 15,
+      Rarity.epic: 40,
+      Rarity.legendary: 100,
     },
     this.goldPenaltyShare = 0.10,
     this.goldPenaltyMax = 200,
@@ -140,6 +140,10 @@ class GameConfig {
 
   int maxCustomXp(QuestType type, Difficulty d) =>
       (defaultXpFor(type, d) * customXpMaxFactor).round();
+
+  /// Skill points come only from character levels (1 per level), so the
+  /// tree opens roughly one cheap skill every day or two of real effort.
+  int skillPointsForLevel(int level) => level - 1;
 
   int levelRewardGold(int level) =>
       levelRewardGoldBase + level * levelRewardGoldPerLevel;

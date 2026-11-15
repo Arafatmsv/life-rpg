@@ -3,117 +3,97 @@ import 'package:flutter/material.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/user_settings.dart';
 
-/// Dark Fantasy palette: graphite surfaces, gold and amethyst accents.
+/// Restrained palette: warm graphite neutrals and one accent (brass).
+///
+/// Colour is reserved for meaning, not decoration: the accent marks progress
+/// and the primary action, red marks problems, everything else is greyscale.
+/// No gradients, glows or per-category rainbow colours.
 abstract final class AppColors {
-  static const bg = Color(0xFF0B0C10);
-  static const bgElevated = Color(0xFF0F1116);
-  static const surface0 = Color(0xFF12141A);
-  static const surface1 = Color(0xFF171A21);
-  static const surface2 = Color(0xFF1E222B);
-  static const surface3 = Color(0xFF262B36);
-  static const border = Color(0xFF2A2F3A);
-  static const borderSoft = Color(0xFF1F232C);
+  // Surfaces
+  static const bg = Color(0xFF0E0E0F);
+  static const bgElevated = Color(0xFF121213);
+  static const surface0 = Color(0xFF151516);
+  static const surface1 = Color(0xFF19191B);
+  static const surface2 = Color(0xFF202022);
+  static const surface3 = Color(0xFF2A2A2D);
+  static const border = Color(0xFF2E2E31);
+  static const borderSoft = Color(0xFF232325);
 
-  static const text = Color(0xFFECE8DF);
-  static const textSecondary = Color(0xFFA6A9B3);
-  static const textMuted = Color(0xFF6E7383);
+  // Text
+  static const text = Color(0xFFEDEBE6);
+  static const textSecondary = Color(0xFFA3A19B);
+  static const textMuted = Color(0xFF6F6D68);
 
-  static const gold = Color(0xFFE3B55B);
-  static const goldBright = Color(0xFFF6D88C);
-  static const goldDeep = Color(0xFF9E6F28);
-  static const violet = Color(0xFF8C6CF0);
-  static const violetBright = Color(0xFFB9A2FF);
-  static const violetDeep = Color(0xFF4B3591);
+  // Accent (brass). Names kept from the first palette for compatibility.
+  static const gold = Color(0xFFC2A26B);
+  static const goldBright = Color(0xFFD3B988);
+  static const goldDeep = Color(0xFF8C744B);
 
-  static const success = Color(0xFF46C98B);
-  static const danger = Color(0xFFE5604F);
-  static const warning = Color(0xFFF0A040);
-  static const info = Color(0xFF5AA2F0);
+  // Former violet tones are neutral now; they only map to secondary ink.
+  static const violet = Color(0xFF8E8C87);
+  static const violetBright = Color(0xFFCFCCC5);
+  static const violetDeep = surface2;
 
-  static const xpStart = Color(0xFF8C6CF0);
-  static const xpEnd = Color(0xFFE3B55B);
+  // States: muted, always paired with text.
+  static const success = Color(0xFF8BA383);
+  static const danger = Color(0xFFC4675C);
+  static const warning = Color(0xFFC79558);
+  static const info = Color(0xFF8E9BA6);
 
-  /// Categorical attribute colors. Validated as a set on the dark surface
-  /// (lightness band, CVD separation of adjacent pairs, contrast ≥ 3:1) —
-  /// the order follows [AttributeType]; do not swap single entries.
-  static Color attribute(AttributeType a) => switch (a) {
-        AttributeType.physique => const Color(0xFFE66767),
-        AttributeType.intelligence => const Color(0xFF3987E5),
-        AttributeType.discipline => const Color(0xFFD55181),
-        AttributeType.career => const Color(0xFFC98500),
-        AttributeType.finance => const Color(0xFF008300),
-        AttributeType.social => const Color(0xFF9085E9),
-        AttributeType.mental => const Color(0xFF199E70),
-      };
+  static const xpStart = gold;
+  static const xpEnd = gold;
 
-  /// Sequential ramp (one hue, dark → light on the dark surface) for the
-  /// activity heatmap. Index 0 = no activity.
+  /// Attributes are told apart by name and icon, not by colour.
+  static Color attribute(AttributeType a) => const Color(0xFFBDBAB3);
+
+  /// One-hue sequential ramp (graphite → brass) for the activity calendar.
+  /// Index 0 = no activity.
   static const heat = [
-    Color(0xFF1E222B),
-    Color(0xFF104281),
-    Color(0xFF1C5CAB),
-    Color(0xFF2A78D6),
-    Color(0xFF5598E7),
-    Color(0xFF86B6EF),
+    Color(0xFF222224),
+    Color(0xFF3A3428),
+    Color(0xFF574A33),
+    Color(0xFF7A6643),
+    Color(0xFFA08756),
+    Color(0xFFC9AA6F),
   ];
 
-  /// Status colors — reserved for good / critical, always shown with a label.
-  static const statusGood = Color(0xFF0CA30C);
-  static const statusCritical = Color(0xFFD03B3B);
+  static const statusGood = success;
+  static const statusCritical = danger;
 
+  /// Rarity reads as a greyscale step; only legendary gets the accent.
   static Color rarity(Rarity r) => switch (r) {
-        Rarity.common => const Color(0xFF9CA3AF),
-        Rarity.rare => const Color(0xFF5AA2F0),
-        Rarity.epic => const Color(0xFFA685FA),
-        Rarity.legendary => const Color(0xFFF2B84B),
+        Rarity.common => textMuted,
+        Rarity.rare => textSecondary,
+        Rarity.epic => text,
+        Rarity.legendary => gold,
       };
 
-  static Color difficulty(Difficulty d) => switch (d) {
-        Difficulty.easy => const Color(0xFF46C98B),
-        Difficulty.normal => const Color(0xFF5AA2F0),
-        Difficulty.hard => const Color(0xFFF0A040),
-        Difficulty.epic => const Color(0xFFE5604F),
-      };
+  static Color difficulty(Difficulty d) => textSecondary;
 
   static Color severity(Severity s) => switch (s) {
-        Severity.light => const Color(0xFFF0C040),
-        Severity.medium => const Color(0xFFF0A040),
-        Severity.severe => const Color(0xFFE5604F),
+        Severity.light => textSecondary,
+        Severity.medium => warning,
+        Severity.severe => danger,
       };
 
-  static Color questType(QuestType t) => switch (t) {
-        QuestType.daily => const Color(0xFF5AA2F0),
-        QuestType.weekly => const Color(0xFF3CCFC0),
-        QuestType.main => const Color(0xFFE3B55B),
-        QuestType.side => const Color(0xFF9CA3AF),
-        QuestType.boss => const Color(0xFFE5604F),
-      };
+  static Color questType(QuestType t) => textSecondary;
 
-  /// Primary accent chosen by the player.
+  /// Accent options the player can choose. All muted metals/earth tones.
   static Color accent(AccentTheme a) => switch (a) {
         AccentTheme.gold => gold,
-        AccentTheme.violet => violetBright,
-        AccentTheme.emerald => const Color(0xFF4CD6A2),
-        AccentTheme.crimson => const Color(0xFFEF6B7B),
+        AccentTheme.violet => const Color(0xFFB4B2AC),
+        AccentTheme.emerald => const Color(0xFF93A48C),
+        AccentTheme.crimson => const Color(0xFFB87E62),
       };
 
-  static Color accentSecondary(AccentTheme a) => switch (a) {
-        AccentTheme.gold => violet,
-        AccentTheme.violet => gold,
-        AccentTheme.emerald => const Color(0xFF5AA2F0),
-        AccentTheme.crimson => gold,
-      };
+  static Color accentSecondary(AccentTheme a) => textSecondary;
 
-  /// Avatar frame colors to pick from.
+  /// Avatar frame tones: metals only.
   static const avatarPalette = [
-    Color(0xFFE3B55B),
-    Color(0xFF8C6CF0),
-    Color(0xFF5AA2F0),
-    Color(0xFF46C98B),
-    Color(0xFFEF6F5E),
-    Color(0xFFF07AB8),
-    Color(0xFF3CCFC0),
-    Color(0xFFC9CDD6),
+    Color(0xFFC2A26B), // brass
+    Color(0xFFB4B2AC), // silver
+    Color(0xFFA97E5A), // bronze
+    Color(0xFF7D7B76), // graphite
   ];
 }
 

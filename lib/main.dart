@@ -18,7 +18,7 @@ Future<void> main() async {
   // Fonts ship inside the app (assets/fonts) — never download them at runtime.
   GoogleFonts.config.allowRuntimeFetching = false;
   LicenseRegistry.addLicense(() async* {
-    for (final f in const ['Manrope', 'CormorantGaramond']) {
+    for (final f in const ['Onest']) {
       yield LicenseEntryWithLineBreaks([f], await rootBundle.loadString('assets/fonts/$f-OFL.txt'));
     }
   });

@@ -119,7 +119,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                                         child: Text(a.title,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: AppText.ui(15, weight: FontWeight.w800)),
+                                            style: AppText.ui(15, weight: FontWeight.w700)),
                                       ),
                                       Pill(a.rarity.tag, color: c),
                                     ]),

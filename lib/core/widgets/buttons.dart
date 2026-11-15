@@ -66,7 +66,7 @@ class RpgButton extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.ui(compact ? 14 : 15, weight: FontWeight.w800, color: fg),
+              style: AppText.ui(compact ? 14 : 15, weight: FontWeight.w700, color: fg),
             ),
           ),
       ],
@@ -150,7 +150,7 @@ class ChoiceChipX extends StatelessWidget {
                 Text(
                   label,
                   style: AppText.ui(13,
-                      weight: selected ? FontWeight.w800 : FontWeight.w600,
+                      weight: selected ? FontWeight.w700 : FontWeight.w600,
                       color: selected ? c : AppColors.textSecondary),
                 ),
               ],

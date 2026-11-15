@@ -70,7 +70,7 @@ class RewardsScreen extends ConsumerWidget {
                       const SizedBox(width: Gap.sm),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(15, weight: FontWeight.w800)),
+                          Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(15, weight: FontWeight.w700)),
                           if (r.description.isNotEmpty)
                             Text(r.description,
                                 maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(12, color: AppColors.textMuted)),

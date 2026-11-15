@@ -74,7 +74,7 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Прогресс дня', style: AppText.ui(15, weight: FontWeight.w800)),
+                Text('Прогресс дня', style: AppText.ui(15, weight: FontWeight.w700)),
                 const SizedBox(height: 2),
                 Text(
                   isRest
@@ -193,7 +193,7 @@ class HomeScreen extends ConsumerWidget {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${snap.streak.current} ${plural(snap.streak.current, 'день', 'дня', 'дней')} подряд',
-                style: AppText.ui(16, weight: FontWeight.w800)),
+                style: AppText.ui(16, weight: FontWeight.w700)),
             Text('Рекорд: ${snap.streak.longest} · успешных дней: ${snap.streak.successfulDays}',
                 style: AppText.ui(12.5, color: AppColors.textMuted)),
           ]),
@@ -239,7 +239,7 @@ class HomeScreen extends ConsumerWidget {
                       Icon(RpgIcons.byKey(def.icon), color: c),
                       const Spacer(),
                       Text(def.title,
-                          maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(13, weight: FontWeight.w800)),
+                          maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(13, weight: FontWeight.w700)),
                       Text(def.rarity.tag, style: AppText.ui(11, color: c, weight: FontWeight.w700)),
                     ]),
                   ),

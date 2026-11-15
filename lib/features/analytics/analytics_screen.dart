@@ -364,7 +364,7 @@ class _XpBars extends StatelessWidget {
                 '${b.tooltip}\n',
                 AppText.ui(12, color: AppColors.textSecondary),
                 children: [
-                  TextSpan(text: '${b.xp} XP', style: AppText.ui(13, weight: FontWeight.w800)),
+                  TextSpan(text: '${b.xp} XP', style: AppText.ui(13, weight: FontWeight.w700)),
                   TextSpan(text: ' · ${b.completions} ${plural(b.completions, 'задание', 'задания', 'заданий')}',
                       style: AppText.ui(12, color: AppColors.textSecondary)),
                 ],

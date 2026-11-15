@@ -12,12 +12,13 @@ abstract final class Gap {
   static const xxxl = 40.0;
 }
 
+/// Tight corners: soft, oversized rounding reads as template UI.
 abstract final class Radii {
-  static const sm = 10.0;
-  static const md = 14.0;
-  static const lg = 20.0;
-  static const xl = 28.0;
-  static const pill = 999.0;
+  static const sm = 4.0;
+  static const md = 6.0;
+  static const lg = 8.0;
+  static const xl = 12.0;
+  static const pill = 4.0;
 
   static const rSm = BorderRadius.all(Radius.circular(sm));
   static const rMd = BorderRadius.all(Radius.circular(md));

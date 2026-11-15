@@ -140,7 +140,7 @@ class ProfileScreen extends ConsumerWidget {
                             const SizedBox(width: Gap.md),
                             Expanded(
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(i.title, style: AppText.ui(15.5, weight: FontWeight.w800)),
+                                Text(i.title, style: AppText.ui(15.5, weight: FontWeight.w700)),
                                 Text(i.subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

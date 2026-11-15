@@ -33,20 +33,13 @@ class RpgCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final br = BorderRadius.circular(radius);
+    // Flat surface with a hairline border. `glow` and `gradient` are kept in
+    // the API for callers but intentionally not rendered.
     final content = Ink(
       decoration: BoxDecoration(
         borderRadius: br,
-        gradient: gradient ??
-            const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.surface1, AppColors.surface0],
-            ),
-        border: Border.all(color: borderColor ?? (glow?.o(0.35) ?? AppColors.borderSoft)),
-        boxShadow: [
-          if (glow != null) BoxShadow(color: glow!.o(0.14), blurRadius: 24, spreadRadius: -4),
-          const BoxShadow(color: Color(0x66000000), blurRadius: 18, offset: Offset(0, 8), spreadRadius: -10),
-        ],
+        color: AppColors.surface0,
+        border: Border.all(color: borderColor ?? AppColors.borderSoft),
       ),
       child: Padding(padding: padding, child: child),
     );
@@ -149,18 +142,9 @@ class IconTile extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => SizedBox(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(size * 0.32),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [color.o(0.26), color.o(0.08)],
-          ),
-          border: Border.all(color: color.o(0.35)),
-        ),
-        child: Icon(icon, color: color, size: size * 0.52),
+        child: Icon(icon, color: AppColors.textSecondary, size: size * 0.5),
       );
 }

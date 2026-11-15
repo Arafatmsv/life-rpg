@@ -6,21 +6,24 @@ import '../../data/models/user_settings.dart';
 import 'app_colors.dart';
 import 'app_tokens.dart';
 
-/// Typography: Cormorant Garamond for display (fantasy tone), Manrope for
-/// UI text. Both include Cyrillic.
+/// Typography: one family (Onest, Cyrillic) in a few weights. Headings
+/// differ by size and weight only. Display sizes were tuned for the old
+/// serif face, so they are scaled down here instead of at every call site.
 abstract final class AppText {
-  static TextStyle display(double size, {FontWeight weight = FontWeight.w700, Color? color}) =>
-      GoogleFonts.cormorantGaramond(
-        fontSize: size,
-        fontWeight: weight,
-        color: color ?? AppColors.text,
-        height: 1.1,
-        letterSpacing: 0.2,
-      );
+  static TextStyle display(double size, {FontWeight weight = FontWeight.w600, Color? color}) {
+    final s = size * 0.8;
+    return GoogleFonts.onest(
+      fontSize: s,
+      fontWeight: weight == FontWeight.w700 ? FontWeight.w600 : weight,
+      color: color ?? AppColors.text,
+      height: 1.15,
+      letterSpacing: -0.02 * s,
+    );
+  }
 
   static TextStyle ui(double size,
-          {FontWeight weight = FontWeight.w500, Color? color, double? height, double? spacing}) =>
-      GoogleFonts.manrope(
+          {FontWeight weight = FontWeight.w400, Color? color, double? height, double? spacing}) =>
+      GoogleFonts.onest(
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColors.text,
@@ -28,14 +31,14 @@ abstract final class AppText {
         letterSpacing: spacing,
       );
 
-  /// Monospaced digits for counters.
-  static TextStyle number(double size, {FontWeight weight = FontWeight.w700, Color? color}) =>
+  /// Tabular digits for counters.
+  static TextStyle number(double size, {FontWeight weight = FontWeight.w600, Color? color}) =>
       ui(size, weight: weight, color: color).copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],
       );
 
   static TextStyle label({Color? color}) =>
-      ui(11, weight: FontWeight.w700, color: color ?? AppColors.textMuted, spacing: 1.2);
+      ui(11, weight: FontWeight.w500, color: color ?? AppColors.textMuted, spacing: 0.6);
 }
 
 ThemeData buildTheme(AccentTheme accentTheme) {
@@ -71,7 +74,7 @@ ThemeData buildTheme(AccentTheme accentTheme) {
   );
 
   final base = ThemeData(useMaterial3: true, colorScheme: scheme, brightness: Brightness.dark);
-  final textTheme = GoogleFonts.manropeTextTheme(base.textTheme).apply(
+  final textTheme = GoogleFonts.onestTextTheme(base.textTheme).apply(
     bodyColor: AppColors.text,
     displayColor: AppColors.text,
   );
@@ -82,6 +85,11 @@ ThemeData buildTheme(AccentTheme accentTheme) {
       );
 
   return base.copyWith(
+    // No hover effects; touch feedback stays subtle.
+    hoverColor: Colors.transparent,
+    highlightColor: AppColors.surface3.o(0.5),
+    splashFactory: InkRipple.splashFactory,
+    splashColor: AppColors.surface3.o(0.6),
     scaffoldBackgroundColor: AppColors.bg,
     canvasColor: AppColors.bg,
     textTheme: textTheme.copyWith(
@@ -152,7 +160,7 @@ ThemeData buildTheme(AccentTheme accentTheme) {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.surface1,
-      selectedColor: accent.o(0.16),
+      selectedColor: AppColors.surface2,
       side: const BorderSide(color: AppColors.border),
       labelStyle: AppText.ui(13, weight: FontWeight.w600),
       secondaryLabelStyle: AppText.ui(13, weight: FontWeight.w700, color: accent),
@@ -181,8 +189,9 @@ ThemeData buildTheme(AccentTheme accentTheme) {
       backgroundColor: AppColors.surface0,
       surfaceTintColor: Colors.transparent,
       showDragHandle: true,
-      dragHandleColor: AppColors.surface3,
+      dragHandleColor: AppColors.border,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl))),
+      elevation: 0,
     ),
     dialogTheme: DialogTheme(
       backgroundColor: AppColors.surface1,
@@ -204,8 +213,9 @@ ThemeData buildTheme(AccentTheme accentTheme) {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.bgElevated,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: accent.o(0.14),
-      height: 68,
+      indicatorColor: AppColors.surface2,
+      indicatorShape: const RoundedRectangleBorder(borderRadius: Radii.rMd),
+      height: 64,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => AppText.ui(11.5,
             weight: FontWeight.w700,
@@ -218,7 +228,8 @@ ThemeData buildTheme(AccentTheme accentTheme) {
     ),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: AppColors.bgElevated,
-      indicatorColor: accent.o(0.14),
+      indicatorColor: AppColors.surface2,
+      indicatorShape: const RoundedRectangleBorder(borderRadius: Radii.rMd),
       selectedIconTheme: IconThemeData(color: accent),
       unselectedIconTheme: const IconThemeData(color: AppColors.textMuted),
       selectedLabelTextStyle: AppText.ui(12.5, weight: FontWeight.w700, color: accent),

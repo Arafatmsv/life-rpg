@@ -328,7 +328,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(c.label, style: AppText.ui(16, weight: FontWeight.w800)),
+                        Text(c.label, style: AppText.ui(16, weight: FontWeight.w700)),
                         const SizedBox(height: 2),
                         Text(c.description, style: AppText.ui(13, color: AppColors.textSecondary)),
                         if (c.defaultFocus.isNotEmpty) ...[

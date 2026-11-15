@@ -45,10 +45,7 @@ class XpBar extends StatelessWidget {
                 width: math.max(v > 0 ? height : 0, c.maxWidth * v),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(height),
-                  gradient: LinearGradient(colors: colors),
-                  boxShadow: glow && v > 0
-                      ? [BoxShadow(color: colors.last.o(0.45), blurRadius: 10, spreadRadius: -2)]
-                      : null,
+                  color: colors.last,
                 ),
               ),
             ),

@@ -174,7 +174,7 @@ class AttributeTile extends StatelessWidget {
                     child: Text(attribute.code,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.ui(11, weight: FontWeight.w800, color: c, spacing: 0.8)),
+                        style: AppText.ui(11, weight: FontWeight.w700, color: c, spacing: 0.8)),
                   ),
                   if (focus) Icon(Icons.star_rounded, size: 12, color: c),
                   const SizedBox(width: 2),
@@ -284,7 +284,7 @@ class _RadarPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: '${a.code.substring(0, 3)} ${values[a]!.floor() + 1}',
-          style: AppText.ui(10.5, weight: FontWeight.w800, color: AppColors.attribute(a)),
+          style: AppText.ui(10.5, weight: FontWeight.w700, color: AppColors.attribute(a)),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

@@ -2,10 +2,11 @@ import '../../core/utils/json.dart';
 import 'enums.dart';
 
 enum AccentTheme {
-  gold('Золото'),
-  violet('Аметист'),
-  emerald('Изумруд'),
-  crimson('Рубин');
+  // Enum names are stored in settings; labels describe the current tones.
+  gold('Латунь'),
+  violet('Серебро'),
+  emerald('Шалфей'),
+  crimson('Терракота');
 
   const AccentTheme(this.label);
   final String label;

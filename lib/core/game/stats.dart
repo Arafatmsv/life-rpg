@@ -73,7 +73,8 @@ class GameSnapshot {
   final int xpToday;
   final int questGoldToday;
 
-  int get skillPoints => skillPointsEarned - skillPointsSpent;
+  /// Never negative (older saves may have spent points under earlier rules).
+  int get skillPoints => skillPointsEarned - skillPointsSpent < 0 ? 0 : skillPointsEarned - skillPointsSpent;
 
   /// Simple overall development rating: sum of attribute levels.
   int get rating => attributeLevels.values.fold(0, (s, l) => s + l.level);
@@ -146,8 +147,7 @@ GameSnapshot buildSnapshot(GameState s, GameConfig c, String today) {
     minCount: s.settings.minCompletionsForStreak,
   );
 
-  final earned = (level.level - 1) +
-      attrLevels.values.fold<int>(0, (sum, l) => sum + (l.level - 1));
+  final earned = c.skillPointsForLevel(level.level);
   final spent = s.skills.values.fold<int>(0, (sum, u) => sum + u.cost);
 
   final failed = s.penalties.values

@@ -93,13 +93,13 @@ void main() {
       final r = engine.completeQuest(s, 'a');
       s = r.state;
       final snap = engine.snapshot(s);
-      // First Step achievement adds 10 XP on top of the quest's 20.
+      // First Step achievement adds 5 XP on top of the quest's 20.
       expect(snap.attributeXp[AttributeType.intelligence], 20);
-      expect(snap.level.totalXp, 30);
+      expect(snap.level.totalXp, 25);
       expect(s.quests['a']!.status, QuestStatus.completed);
       expect(r.events.whereType<QuestCompletedEvent>(), hasLength(1));
       expect(r.events.whereType<AchievementUnlockedEvent>().single.def.id, 'first_step');
-      expect(gold(s), 10 + 25); // quest gold + achievement gold
+      expect(gold(s), 5 + 10); // quest gold (20 × 0.25) + achievement gold
     });
 
     test('cannot complete the same period twice', () {
@@ -113,7 +113,7 @@ void main() {
       s = engine.completeQuest(s, 'd').state;
       final snap = engine.snapshot(s);
       expect(snap.attributeXp[AttributeType.intelligence], 20);
-      expect(snap.attributeXp[AttributeType.discipline], 5);
+      expect(snap.attributeXp[AttributeType.discipline], 2); // 10% of 20
     });
 
     test('daily quest can be completed again next day', () {
@@ -156,8 +156,8 @@ void main() {
       final c = s.activeCompletions.single;
       s = engine.revertCompletion(s, c.id).state;
       // Achievement reward is kept, quest reward is compensated.
-      expect(totalXp(s) - xp0, 10);
-      expect(gold(s) - gold0, 25);
+      expect(totalXp(s) - xp0, 5);
+      expect(gold(s) - gold0, 10);
       expect(s.quests['a']!.status, QuestStatus.active);
       // Can be completed again, but with a new completion id.
       s = engine.completeQuest(s, 'a').state;
@@ -328,16 +328,40 @@ void main() {
   group('shop', () {
     test('purchase needs balance, refund returns gold', () {
       var s = start();
-      final r = Reward(id: 'r', title: 'Фильм', cost: 30, icon: 'film', createdAt: now, updatedAt: now);
+      final r = Reward(id: 'r', title: 'Фильм', cost: 12, icon: 'film', createdAt: now, updatedAt: now);
       s = engine.saveReward(s, r).state;
       expect(() => engine.purchaseReward(s, 'r'), throwsA(isA<GameException>()));
       s = add(s, quest('x', type: QuestType.side));
-      s = engine.completeQuest(s, 'x').state; // 10 + 25 gold
+      s = engine.completeQuest(s, 'x').state; // 5 + 10 gold
       s = engine.purchaseReward(s, 'r').state;
-      // 35 − 30, plus 25 for the "first reward" achievement.
-      expect(gold(s), 30);
+      // 15 - 12, plus 10 for the "first reward" achievement.
+      expect(gold(s), 13);
       s = engine.refundPurchase(s, s.purchases.values.single.id).state;
-      expect(gold(s), 60);
+      expect(gold(s), 25);
+    });
+  });
+
+  group('economy', () {
+    test('skill points come only from character levels', () {
+      var s = start();
+      // Lots of attribute XP but no character level-up yet: still 0 SP.
+      s = add(s, quest('a', type: QuestType.side, difficulty: Difficulty.epic));
+      s = engine.completeQuest(s, 'a').state;
+      final snap = engine.snapshot(s);
+      expect(snap.level.level, 1);
+      expect(snap.skillPoints, 0);
+    });
+
+    test('one full day of typical quests does not buy a whole skill branch', () {
+      var s = start();
+      for (var i = 0; i < 5; i++) {
+        s = add(s, quest('d$i'));
+        s = engine.completeQuest(s, 'd$i').state;
+      }
+      final snap = engine.snapshot(s);
+      // About one level (and one skill point) per day of normal effort.
+      expect(snap.skillPoints, lessThanOrEqualTo(1));
+      expect(snap.gold, lessThan(100));
     });
   });
 

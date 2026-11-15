@@ -245,7 +245,7 @@ class _ToastView extends StatelessWidget {
                         Text(toast.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppText.ui(14, weight: FontWeight.w800, color: toast.color)),
+                            style: AppText.ui(14, weight: FontWeight.w700, color: toast.color)),
                         if (toast.subtitle != null && toast.subtitle!.isNotEmpty)
                           Text(toast.subtitle!,
                               maxLines: 1,
