@@ -15,6 +15,7 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../data/models/enums.dart';
 import '../game/game_controller.dart';
 import '../quests/quest_templates.dart';
+import '../settings/import_flow.dart';
 
 /// Character creation in five short steps.
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -212,6 +213,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         'Это вы — в мире, где реальные дела превращаются в опыт.',
         [
           Center(child: AvatarEmblem(avatarId: _avatar, colorIndex: _color, size: 120)),
+          const SizedBox(height: Gap.sm),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => importProgressFromFile(context, ref),
+              icon: const Icon(Icons.upload_file_rounded, size: 18),
+              label: const Text('Загрузить прогресс из файла'),
+            ),
+          ),
           const SizedBox(height: Gap.xl),
           TextField(
             controller: _name,

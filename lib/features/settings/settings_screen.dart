@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +17,7 @@ import '../../data/datasources/remote_game_source.dart';
 import '../../data/models/user_settings.dart';
 import '../authentication/session_controller.dart';
 import '../game/game_controller.dart';
+import 'import_flow.dart';
 import 'settings_widgets.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -191,7 +189,7 @@ class SettingsScreen extends ConsumerWidget {
                       leading: const Icon(Icons.upload_file_rounded),
                       title: const Text('Импорт данных'),
                       subtitle: const Text('Загрузить прогресс из файла экспорта'),
-                      onTap: () => _import(context, ref),
+                      onTap: () => importProgressFromFile(context, ref),
                     ),
                   ]),
                   SettingsGroup(
@@ -257,34 +255,6 @@ class SettingsScreen extends ConsumerWidget {
             ],
           )),
     );
-  }
-
-  Future<void> _import(BuildContext context, WidgetRef ref) async {
-    final picked = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: const ['json'],
-      withData: true,
-    );
-    final bytes = picked?.files.firstOrNull?.bytes;
-    if (bytes == null || !context.mounted) return;
-    final Map<String, Map<String, Map<String, dynamic>>> tables;
-    try {
-      tables = ref.read(exportServiceProvider).parse(utf8.decode(bytes, allowMalformed: true));
-    } catch (e) {
-      showMessage(context, describeError(e), error: true);
-      return;
-    }
-    final ch = tables['characters']!.values.first;
-    final ok = await confirm(context,
-        title: 'Заменить прогресс?',
-        message: 'Будет загружен персонаж «${ch['name']}» из файла. Текущий прогресс на этом устройстве '
-            'будет заменён. Если он нужен — сначала сделайте экспорт.',
-        confirmLabel: 'Импортировать',
-        destructive: true);
-    if (!ok || !context.mounted) return;
-    final err = await ref.read(gameControllerProvider.notifier).importTables(tables);
-    if (!context.mounted) return;
-    showMessage(context, err ?? 'Прогресс загружен', error: err != null);
   }
 
   Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
