@@ -16,6 +16,7 @@ import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/ledger.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 import 'character_edit_sheet.dart';
 import 'character_widgets.dart';
 
@@ -28,7 +29,6 @@ class CharacterScreen extends ConsumerWidget {
     final snap = ref.watch(snapshotProvider);
     if (s == null || snap == null) return const Scaffold(body: LoadingView());
     final ch = s.character!;
-    final accent = Theme.of(context).colorScheme.primary;
     final tz = s.settings.tzOffsetMinutes;
     final recent = s.xp.values.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -41,9 +41,7 @@ class CharacterScreen extends ConsumerWidget {
         Text(ch.name, textAlign: TextAlign.center, style: AppText.display(34)),
         const SizedBox(height: 4),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(RpgIcons.characterClass(ch.characterClass), size: 16, color: accent),
-          const SizedBox(width: 6),
-          Text(ch.characterClass.label, style: AppText.ui(14, weight: FontWeight.w700, color: accent)),
+          Text(ch.characterClass.label, style: AppText.ui(14, color: AppColors.textSecondary)),
         ]),
         const SizedBox(height: Gap.lg),
         Row(children: [
@@ -56,10 +54,10 @@ class CharacterScreen extends ConsumerWidget {
         XpBar(value: snap.level.progress, height: 12),
         const SizedBox(height: Gap.lg),
         Wrap(alignment: WrapAlignment.center, spacing: Gap.lg, runSpacing: Gap.sm, children: [
-          _Big('${snap.level.totalXp}', 'всего XP'),
-          _Big('${snap.gold}', 'Gold', color: AppColors.gold),
-          _Big('${snap.rating}', 'рейтинг', color: AppColors.violetBright),
-          _Big('${snap.skillPoints}', 'очки навыков', color: AppColors.info),
+          Explain(term: Term.xp, child: _Big('${snap.level.totalXp}', 'всего XP')),
+          Explain(term: Term.gold, child: _Big('${snap.gold}', 'Gold')),
+          Explain(term: Term.rating, child: _Big('${snap.rating}', 'рейтинг')),
+          Explain(term: Term.sp, child: _Big('${snap.skillPoints}', 'очки навыков')),
         ]),
         const SizedBox(height: Gap.lg),
         Wrap(spacing: Gap.xs, runSpacing: Gap.xs, alignment: WrapAlignment.center, children: [
@@ -94,7 +92,7 @@ class CharacterScreen extends ConsumerWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text('Характеристики', style: AppText.display(22)),
         const SizedBox(height: 4),
-        Text('Игровые показатели прогресса по реальным действиям — не оценка вас как человека.',
+        Text('Игровые показатели. Растут от реальных действий.',
             style: AppText.ui(12.5, color: AppColors.textMuted)),
         const SizedBox(height: Gap.sm),
         for (final a in AttributeType.values)
@@ -116,7 +114,7 @@ class CharacterScreen extends ConsumerWidget {
                       if (ch.focus.contains(a))
                         Padding(
                           padding: const EdgeInsets.only(right: 6),
-                          child: Pill('фокус', color: AppColors.attribute(a), icon: Icons.star_rounded),
+                          child: const Explain(term: Term.focus, child: Pill('фокус')),
                         ),
                       Text('Ур. ${snap.attributeLevels[a]!.level}', style: AppText.number(14)),
                     ]),
@@ -155,7 +153,7 @@ class CharacterScreen extends ConsumerWidget {
         const SizedBox(height: Gap.xs),
         Wrap(spacing: 6, runSpacing: 6, children: [
           for (final a in ch.focus)
-            Pill(a.label, color: AppColors.attribute(a), icon: RpgIcons.attribute(a), filled: true),
+            Explain(term: Term.focus, child: Pill(a.label, color: AppColors.text)),
           if (ch.focus.isEmpty) Text('Фокус не выбран', style: AppText.ui(13, color: AppColors.textMuted)),
         ]),
         const SizedBox(height: Gap.sm),
@@ -163,12 +161,10 @@ class CharacterScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(children: [
-              const Icon(Icons.flag_rounded, size: 16, color: AppColors.gold),
-              const SizedBox(width: 8),
               Expanded(child: Text(g, style: AppText.ui(14))),
             ]),
           ),
-        if (ch.goals.isEmpty) Text('Добавьте личные цели — они напоминают, зачем всё это.', style: AppText.ui(13, color: AppColors.textMuted)),
+        if (ch.goals.isEmpty) Text('Добавьте личные цели в редактировании персонажа.', style: AppText.ui(13, color: AppColors.textMuted)),
       ]),
     );
 
@@ -213,14 +209,13 @@ class CharacterScreen extends ConsumerWidget {
 }
 
 class _Big extends StatelessWidget {
-  const _Big(this.value, this.label, {this.color});
+  const _Big(this.value, this.label);
   final String value;
   final String label;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) => Column(children: [
-        Text(value, style: AppText.number(22, color: color ?? AppColors.text)),
+        Text(value, style: AppText.number(22, color: AppColors.text)),
         Text(label, style: AppText.ui(11.5, color: AppColors.textMuted)),
       ]);
 }
@@ -235,12 +230,9 @@ class XpHistoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final positive = tx.amount >= 0;
     final at = GameClock.toWall(tx.createdAt, tz);
-    final color = tx.attribute == null ? AppColors.violetBright : AppColors.attribute(tx.attribute!);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(children: [
-        Container(width: 3, height: 32, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
-        const SizedBox(width: Gap.sm),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(tx.note.isEmpty ? tx.source.label : tx.note,
@@ -255,7 +247,7 @@ class XpHistoryRow extends StatelessWidget {
           ]),
         ),
         Text('${positive ? '+' : ''}${tx.amount}',
-            style: AppText.number(14, color: positive ? AppColors.violetBright : AppColors.danger)),
+            style: AppText.number(14, color: positive ? AppColors.text : AppColors.danger)),
       ]),
     );
   }

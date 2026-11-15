@@ -21,6 +21,7 @@ import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/game_state.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 enum _NodeState { unlocked, available, locked }
 
@@ -90,7 +91,7 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> {
             padding: const EdgeInsets.only(right: Gap.md),
             child: Tooltip(
               message: 'Очки навыков: 1 за каждый уровень персонажа и характеристик',
-              child: Pill('${snap.skillPoints} SP', color: AppColors.info, icon: Icons.bolt_rounded, filled: true),
+              child: Explain(term: Term.sp, child: Pill('${snap.skillPoints} SP', color: AppColors.text)),
             ),
           ),
         ],
@@ -195,7 +196,7 @@ class _TreeCanvas extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final e = ref.watch(engineProvider);
     final nodes = skillsOf(attribute);
-    final color = AppColors.attribute(attribute);
+    final color = Theme.of(context).colorScheme.primary;
     final node = large ? 92.0 : 76.0;
     final colW = large ? 210.0 : 128.0;
     final rowH = large ? 170.0 : 142.0;
@@ -221,17 +222,6 @@ class _TreeCanvas extends ConsumerWidget {
       // Fit the tree to the available width on first show.
       final fit = math.min(1.0, c.maxWidth / width);
       return Stack(children: [
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(0, -0.6),
-                radius: 1.1,
-                colors: [color.o(0.10), AppColors.bg],
-              ),
-            ),
-          ),
-        ),
         InteractiveViewer(
           transformationController: controller,
           constrained: false,
@@ -343,25 +333,15 @@ class _EdgePainter extends CustomPainter {
       final path = Path()
         ..moveTo(a.dx, a.dy)
         ..cubicTo(a.dx, (a.dy + b.dy) / 2, b.dx, (a.dy + b.dy) / 2, b.dx, b.dy);
-      if (both) {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 8
-            ..color = color.o(0.18)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
-        );
-      }
       canvas.drawPath(
         path,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = both ? 2.6 : 1.6
+          ..strokeWidth = 1.2
           ..color = both
               ? color
               : from
-                  ? AppColors.gold.o(0.55)
+                  ? AppColors.textMuted
                   : AppColors.border,
       );
     }
@@ -390,37 +370,21 @@ class _SkillNode extends StatefulWidget {
   State<_SkillNode> createState() => _SkillNodeState();
 }
 
-class _SkillNodeState extends State<_SkillNode> with TickerProviderStateMixin {
-  late final _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
-  late final _burst = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _syncPulse();
-  }
+class _SkillNodeState extends State<_SkillNode> with SingleTickerProviderStateMixin {
+  // Unlocking: a short, small scale step. No glow or pulsing.
+  late final _unlock = AnimationController(vsync: this, duration: const Duration(milliseconds: 260));
 
   @override
   void didUpdateWidget(_SkillNode old) {
     super.didUpdateWidget(old);
     if (old.state != _NodeState.unlocked && widget.state == _NodeState.unlocked && Motion.enabled(context)) {
-      _burst.forward(from: 0);
-    }
-    _syncPulse();
-  }
-
-  void _syncPulse() {
-    if (widget.state == _NodeState.available && Motion.enabled(context)) {
-      if (!_pulse.isAnimating) _pulse.repeat(reverse: true);
-    } else {
-      _pulse.stop();
+      _unlock.forward(from: 0);
     }
   }
 
   @override
   void dispose() {
-    _pulse.dispose();
-    _burst.dispose();
+    _unlock.dispose();
     super.dispose();
   }
 
@@ -428,10 +392,11 @@ class _SkillNodeState extends State<_SkillNode> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final d = widget.def;
     final s = widget.state;
-    final c = switch (s) {
-      _NodeState.unlocked => widget.color,
-      _NodeState.available => AppColors.gold,
-      _NodeState.locked => AppColors.textMuted,
+    final accent = widget.color;
+    final (Color fill, Color stroke, Color ink) = switch (s) {
+      _NodeState.unlocked => (accent, accent, AppColors.bg),
+      _NodeState.available => (AppColors.surface1, accent, AppColors.text),
+      _NodeState.locked => (AppColors.surface0, AppColors.border, AppColors.textMuted),
     };
     return Semantics(
       button: true,
@@ -445,44 +410,24 @@ class _SkillNodeState extends State<_SkillNode> with TickerProviderStateMixin {
         behavior: HitTestBehavior.opaque,
         child: Column(children: [
           AnimatedBuilder(
-            animation: Listenable.merge([_pulse, _burst]),
-            builder: (context, child) {
-              final glow = s == _NodeState.available ? 0.15 + _pulse.value * 0.25 : (s == _NodeState.unlocked ? 0.35 : 0.0);
-              final burst = _burst.isAnimating ? math.sin(_burst.value * math.pi) : 0.0;
-              return Transform.scale(
-                scale: 1 + burst * 0.18,
-                child: Container(
-                  width: widget.size,
-                  height: widget.size,
-                  decoration: ShapeDecoration(
-                    shape: const _HexBorder(),
-                    gradient: RadialGradient(
-                      colors: s == _NodeState.unlocked
-                          ? [c.o(0.55), c.o(0.12)]
-                          : [AppColors.surface2, AppColors.surface0],
-                    ),
-                    shadows: [
-                      if (glow > 0 || burst > 0)
-                        BoxShadow(color: c.o((glow + burst * 0.5).clamp(0, 1)), blurRadius: 22 + burst * 20, spreadRadius: -2),
-                    ],
-                  ),
-                  child: CustomPaint(
-                    painter: _HexStroke(c.o(s == _NodeState.locked ? 0.45 : 0.95), s == _NodeState.unlocked ? 2.2 : 1.6),
-                    child: child,
-                  ),
-                ),
-              );
-            },
-            child: Center(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(
-                  s == _NodeState.locked ? Icons.lock_rounded : RpgIcons.attribute(d.attribute),
-                  color: s == _NodeState.unlocked ? AppColors.text : c,
-                  size: widget.size * 0.3,
-                ),
-                const SizedBox(height: 2),
-                Text('${d.cost} SP', style: AppText.number(widget.size * 0.13, color: c)),
-              ]),
+            animation: _unlock,
+            builder: (context, child) => Transform.scale(
+              scale: 1 + math.sin(_unlock.value * math.pi) * 0.06,
+              child: child,
+            ),
+            child: Container(
+              width: widget.size * 0.78,
+              height: widget.size * 0.78,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: fill,
+                border: Border.all(color: stroke, width: 1.2),
+              ),
+              child: Center(
+                child: s == _NodeState.locked
+                    ? Icon(Icons.lock_outline_rounded, color: ink, size: widget.size * 0.24)
+                    : Text('${d.cost}', style: AppText.number(widget.size * 0.22, color: ink)),
+              ),
             ),
           ),
           const SizedBox(height: 6),
@@ -491,60 +436,13 @@ class _SkillNodeState extends State<_SkillNode> with TickerProviderStateMixin {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppText.ui(widget.size * 0.15,
-                weight: FontWeight.w700, color: s == _NodeState.locked ? AppColors.textMuted : AppColors.text),
+            style: AppText.ui(widget.size * 0.14,
+                weight: FontWeight.w500, color: s == _NodeState.locked ? AppColors.textMuted : AppColors.text),
           ),
         ]),
       ),
     );
   }
-}
-
-class _HexBorder extends ShapeBorder {
-  const _HexBorder();
-
-  static Path hex(Rect r) {
-    final c = r.center;
-    final rad = r.width / 2;
-    final p = Path();
-    for (var i = 0; i < 6; i++) {
-      final a = math.pi / 6 + i * math.pi / 3;
-      final o = c + Offset(math.cos(a), math.sin(a)) * rad;
-      i == 0 ? p.moveTo(o.dx, o.dy) : p.lineTo(o.dx, o.dy);
-    }
-    return p..close();
-  }
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) => hex(rect);
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) => hex(rect);
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {}
-  @override
-  ShapeBorder scale(double t) => this;
-}
-
-class _HexStroke extends CustomPainter {
-  _HexStroke(this.color, this.width);
-  final Color color;
-  final double width;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      _HexBorder.hex(Offset.zero & size),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = width
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_HexStroke old) => old.color != color || old.width != width;
 }
 
 class _SkillDetails extends ConsumerWidget {
@@ -561,13 +459,13 @@ class _SkillDetails extends ConsumerWidget {
     final c = AppColors.attribute(def.attribute);
     final lvl = snap.attributeLevels[def.attribute]!.level;
 
+    // Plain rows with a status word on the right (no check-mark lists).
     Widget req(bool ok, String text) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(children: [
-            Icon(ok ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                size: 18, color: ok ? AppColors.success : AppColors.textMuted),
-            const SizedBox(width: 8),
-            Expanded(child: Text(text, style: AppText.ui(13.5, color: ok ? AppColors.text : AppColors.textSecondary))),
+            Expanded(child: Text(text, style: AppText.ui(14))),
+            Text(ok ? 'есть' : 'нет',
+                style: AppText.ui(13, color: ok ? AppColors.textSecondary : AppColors.danger)),
           ]),
         );
 
@@ -579,7 +477,7 @@ class _SkillDetails extends ConsumerWidget {
           const SizedBox(width: Gap.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${def.attribute.code} · УРОВЕНЬ ДРЕВА ${def.tier}', style: AppText.label(color: c)),
+              Text('${def.attribute.label} · ярус ${def.tier}', style: AppText.label()),
               Text(def.title, style: AppText.display(26)),
             ]),
           ),
@@ -587,17 +485,8 @@ class _SkillDetails extends ConsumerWidget {
         const SizedBox(height: Gap.md),
         Text(def.description, style: AppText.ui(14.5, color: AppColors.textSecondary, height: 1.5)),
         const SizedBox(height: Gap.md),
-        RpgCard(
-          padding: const EdgeInsets.all(Gap.sm),
-          child: Row(children: [
-            const Icon(Icons.auto_awesome_rounded, color: AppColors.violetBright),
-            const SizedBox(width: Gap.sm),
-            Expanded(
-              child: Text('«${def.perk}» · +${(def.xpBonus * 100).round()}% XP к заданиям «${def.attribute.label}»',
-                  style: AppText.ui(13.5, weight: FontWeight.w600)),
-            ),
-          ]),
-        ),
+        Text('Эффект: +${(def.xpBonus * 100).round()}% опыта к заданиям «${def.attribute.label}».',
+            style: AppText.ui(14.5, weight: FontWeight.w500)),
         const SizedBox(height: Gap.md),
         Text('ТРЕБОВАНИЯ', style: AppText.label()),
         req(lvl >= def.requiredLevel, '${def.attribute.label}: уровень ${def.requiredLevel} (сейчас $lvl)'),
@@ -609,11 +498,7 @@ class _SkillDetails extends ConsumerWidget {
         req(unlocked != null || snap.skillPoints >= def.cost, 'Стоимость: ${def.cost} SP (доступно ${snap.skillPoints})'),
         const SizedBox(height: Gap.lg),
         if (unlocked != null)
-          Row(children: [
-            Icon(Icons.verified_rounded, color: c),
-            const SizedBox(width: 8),
-            Text('Навык открыт', style: AppText.ui(15, weight: FontWeight.w700, color: c)),
-          ])
+          Text('Навык открыт', style: AppText.ui(15, weight: FontWeight.w600))
         else ...[
           RpgButton(
             label: 'Открыть за ${def.cost} SP',

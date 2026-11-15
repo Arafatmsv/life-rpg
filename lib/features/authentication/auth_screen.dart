@@ -7,7 +7,9 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_theme.dart';
 import '../../app/theme/app_tokens.dart';
 import '../../core/errors/game_exception.dart';
+import '../../core/widgets/brand_mark.dart';
 import '../../core/widgets/buttons.dart';
+import '../legal/legal_links.dart';
 import '../../core/widgets/feedback.dart';
 import '../../core/widgets/rpg_card.dart';
 import 'session_controller.dart';
@@ -77,58 +79,44 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
     final title = switch (_mode) {
       _Mode.signIn => 'Вход',
       _Mode.signUp => 'Регистрация',
       _Mode.reset => 'Восстановление пароля',
     };
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(0, -0.9),
-            radius: 1.2,
-            colors: [AppColors.violetDeep.o(0.35), AppColors.bg],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(Gap.lg),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Icon(Icons.auto_awesome_rounded, color: accent, size: 40),
-                    const SizedBox(height: Gap.sm),
-                    Text('Life RPG', textAlign: TextAlign.center, style: AppText.display(44)),
-                    Text(
-                      'Прокачивай персонажа.\nПрокачивай себя в реальной жизни.',
-                      textAlign: TextAlign.center,
-                      style: AppText.ui(14, color: AppColors.textSecondary, height: 1.5),
-                    ),
-                    const SizedBox(height: Gap.xl),
-                    if (!Env.hasSupabase) _offlineOnly(context) else _formCard(title),
-                    const SizedBox(height: Gap.md),
-                    RpgButton(
-                      label: 'Играть без аккаунта',
-                      icon: Icons.phone_android_rounded,
-                      kind: RpgButtonKind.secondary,
-                      expand: true,
-                      onPressed: _busy
-                          ? null
-                          : () => ref.read(sessionProvider.notifier).continueAsGuest(),
-                    ),
-                    const SizedBox(height: Gap.xs),
-                    Text(
-                      'Прогресс сохранится на устройстве. Позже его можно перенести в аккаунт.',
-                      textAlign: TextAlign.center,
-                      style: AppText.ui(12, color: AppColors.textMuted),
-                    ),
-                  ],
-                ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(Gap.lg),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Align(alignment: Alignment.centerLeft, child: BrandLockup(markSize: 28, textSize: 22)),
+                  const SizedBox(height: Gap.sm),
+                  Text(
+                    'Реальные дела превращаются в опыт персонажа.',
+                    style: AppText.ui(14.5, color: AppColors.textSecondary, height: 1.5),
+                  ),
+                  const SizedBox(height: Gap.xl),
+                  if (!Env.hasSupabase) _offlineOnly(context) else _formCard(title),
+                  const SizedBox(height: Gap.md),
+                  RpgButton(
+                    label: 'Играть без аккаунта',
+                    kind: RpgButtonKind.secondary,
+                    expand: true,
+                    onPressed: _busy ? null : () => ref.read(sessionProvider.notifier).continueAsGuest(),
+                  ),
+                  const SizedBox(height: Gap.xs),
+                  Text(
+                    'Прогресс сохранится на устройстве. Позже его можно перенести в аккаунт.',
+                    style: AppText.ui(12.5, color: AppColors.textMuted),
+                  ),
+                  const SizedBox(height: Gap.xl),
+                  const LegalLinks(),
+                ],
               ),
             ),
           ),
@@ -140,7 +128,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget _offlineOnly(BuildContext context) => RpgCard(
         child: Text(
           'Облачная синхронизация не настроена в этой сборке. '
-          'Можно играть локально — все данные останутся на устройстве.',
+          'Можно играть локально: все данные останутся на устройстве.',
           style: AppText.ui(14, color: AppColors.textSecondary, height: 1.45),
         ),
       );

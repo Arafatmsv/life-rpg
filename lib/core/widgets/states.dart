@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_theme.dart';
 import '../../app/theme/app_tokens.dart';
 import 'buttons.dart';
+import 'motion.dart';
 
 class EmptyState extends StatelessWidget {
   const EmptyState({
@@ -16,6 +17,7 @@ class EmptyState extends StatelessWidget {
     this.compact = false,
   });
 
+  /// Kept for API compatibility; empty states are text-only.
   final IconData icon;
   final String title;
   final String message;
@@ -24,42 +26,28 @@ class EmptyState extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: compact ? Gap.lg : Gap.xxxl, horizontal: Gap.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: compact ? 56 : 76,
-            height: compact ? 56 : 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [accent.o(0.22), accent.o(0.02)]),
-              border: Border.all(color: accent.o(0.3)),
+  Widget build(BuildContext context) => Padding(
+        padding: EdgeInsets.symmetric(vertical: compact ? Gap.md : Gap.xxl, horizontal: Gap.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title, textAlign: TextAlign.center, style: AppText.ui(compact ? 15 : 17, weight: FontWeight.w600)),
+            const SizedBox(height: Gap.xs),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: AppText.ui(14, color: AppColors.textSecondary, height: 1.45),
+              ),
             ),
-            child: Icon(icon, color: accent, size: compact ? 26 : 34),
-          ),
-          const SizedBox(height: Gap.md),
-          Text(title, textAlign: TextAlign.center, style: AppText.display(compact ? 20 : 24)),
-          const SizedBox(height: Gap.xs),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 380),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppText.ui(14, color: AppColors.textSecondary, height: 1.45),
-            ),
-          ),
-          if (actionLabel != null) ...[
-            const SizedBox(height: Gap.lg),
-            RpgButton(label: actionLabel!, onPressed: onAction, icon: Icons.add_rounded),
+            if (actionLabel != null) ...[
+              const SizedBox(height: Gap.lg),
+              RpgButton(label: actionLabel!, onPressed: onAction, kind: RpgButtonKind.secondary, compact: true),
+            ],
           ],
-        ],
-      ),
-    );
-  }
+        ),
+      );
 }
 
 class ErrorView extends StatelessWidget {
@@ -75,21 +63,12 @@ class ErrorView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 44),
-              const SizedBox(height: Gap.md),
-              Text('Не удалось загрузить', style: AppText.display(24)),
+              Text('Не удалось загрузить', style: AppText.ui(17, weight: FontWeight.w600)),
               const SizedBox(height: Gap.xs),
-              Text(message,
-                  textAlign: TextAlign.center,
-                  style: AppText.ui(14, color: AppColors.textSecondary)),
+              Text(message, textAlign: TextAlign.center, style: AppText.ui(14, color: AppColors.textSecondary)),
               if (onRetry != null) ...[
                 const SizedBox(height: Gap.lg),
-                RpgButton(
-                  label: 'Повторить',
-                  icon: Icons.refresh_rounded,
-                  onPressed: onRetry,
-                  kind: RpgButtonKind.secondary,
-                ),
+                RpgButton(label: 'Повторить', onPressed: onRetry, kind: RpgButtonKind.secondary, compact: true),
               ],
             ],
           ),
@@ -97,23 +76,84 @@ class ErrorView extends StatelessWidget {
       );
 }
 
+/// Placeholder block for skeleton screens. Pulses gently unless motion is
+/// reduced.
+class SkeletonBox extends StatefulWidget {
+  const SkeletonBox({super.key, this.width, required this.height, this.radius = Radii.md});
+  final double? width;
+  final double height;
+  final double radius;
+
+  @override
+  State<SkeletonBox> createState() => _SkeletonBoxState();
+}
+
+class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (Motion.enabled(context)) {
+      if (!_c.isAnimating) _c.repeat(reverse: true);
+    } else {
+      _c.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) => Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: Color.lerp(AppColors.surface1, AppColors.surface2, _c.value),
+            borderRadius: BorderRadius.circular(widget.radius),
+          ),
+        ),
+      );
+}
+
+/// Skeleton of a typical screen (title, a summary block, a list). Shown
+/// instead of a spinner while data loads, so the layout does not jump.
 class LoadingView extends StatelessWidget {
-  const LoadingView({super.key, this.label = 'Загрузка мира…'});
+  const LoadingView({super.key, this.label = 'Загрузка'});
   final String label;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 34,
-              height: 34,
-              child: CircularProgressIndicator(strokeWidth: 2.6),
+  Widget build(BuildContext context) => Semantics(
+        label: label,
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: ListView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(Gap.md),
+                children: const [
+                  SkeletonBox(width: 160, height: 22),
+                  SizedBox(height: Gap.lg),
+                  SkeletonBox(height: 132, radius: Radii.lg),
+                  SizedBox(height: Gap.lg),
+                  SkeletonBox(width: 120, height: 16),
+                  SizedBox(height: Gap.sm),
+                  SkeletonBox(height: 64, radius: Radii.lg),
+                  SizedBox(height: Gap.xs),
+                  SkeletonBox(height: 64, radius: Radii.lg),
+                  SizedBox(height: Gap.xs),
+                  SkeletonBox(height: 64, radius: Radii.lg),
+                ],
+              ),
             ),
-            const SizedBox(height: Gap.md),
-            Text(label, style: AppText.ui(13, color: AppColors.textMuted)),
-          ],
+          ),
         ),
       );
 }

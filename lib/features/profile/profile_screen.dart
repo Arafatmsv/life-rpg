@@ -64,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
                 SyncPhase.error => Icons.sync_problem_rounded,
               },
               color: switch (sync.phase) {
-                SyncPhase.idle => AppColors.success,
+                SyncPhase.idle => AppColors.textSecondary,
                 SyncPhase.offline => AppColors.warning,
                 SyncPhase.error => AppColors.danger,
                 _ => AppColors.textSecondary,
@@ -114,6 +114,8 @@ class ProfileScreen extends ConsumerWidget {
           openPenalties == 0 ? AppColors.success : AppColors.warning),
       _MenuItem(Icons.tune_rounded, 'Настройки', 'Игровые правила, уведомления, аккаунт', '/profile/settings',
           AppColors.textSecondary),
+      _MenuItem(Icons.help_outline_rounded, 'Как устроена игра', 'Опыт, Gold, очки навыков, серии и остальное',
+          '/profile/help', AppColors.textSecondary),
     ];
 
     return Scaffold(
@@ -126,31 +128,32 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   account,
                   const SizedBox(height: Gap.md),
-                  ResponsiveColumns(
-                    minItemWidth: 300,
-                    maxColumns: 2,
-                    spacing: Gap.sm,
-                    children: [
-                      for (final i in items)
-                        RpgCard(
-                          padding: const EdgeInsets.all(Gap.md),
-                          onTap: () => context.push(i.route),
-                          child: Row(children: [
-                            IconTile(i.icon, color: i.color, size: 44),
-                            const SizedBox(width: Gap.md),
-                            Expanded(
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(i.title, style: AppText.ui(15.5, weight: FontWeight.w700)),
-                                Text(i.subtitle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppText.ui(12.5, color: AppColors.textMuted)),
-                              ]),
-                            ),
-                            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
-                          ]),
+                  RpgCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(children: [
+                      for (var k = 0; k < items.length; k++) ...[
+                        if (k > 0) const Divider(height: 1, indent: Gap.md),
+                        InkWell(
+                          onTap: () => context.push(items[k].route),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 14),
+                            child: Row(children: [
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Text(items[k].title, style: AppText.ui(15, weight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(items[k].subtitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppText.ui(12.5, color: AppColors.textMuted)),
+                                ]),
+                              ),
+                              const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 20),
+                            ]),
+                          ),
                         ),
-                    ],
+                      ],
+                    ]),
                   ),
                 ]),
               ),

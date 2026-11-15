@@ -12,7 +12,9 @@ import '../features/authentication/session_controller.dart';
 import '../features/character/character_screen.dart';
 import '../features/game/game_controller.dart';
 import '../features/home/home_screen.dart';
+import '../features/help/glossary_screen.dart';
 import '../features/journal/journal_editor_screen.dart';
+import '../features/legal/legal_screen.dart';
 import '../features/journal/journal_screen.dart';
 import '../features/missions/quest_detail_screen.dart';
 import '../features/notifications/notification_settings_screen.dart';
@@ -49,6 +51,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final session = ref.read(sessionProvider);
       final loc = state.matchedLocation;
+      // Documents are readable in any state (before sign-in, during onboarding).
+      if (loc.startsWith('/legal')) return null;
       final inAuth = loc.startsWith('/auth');
       if (session.passwordRecovery) return loc == '/auth/new-password' ? null : '/auth/new-password';
       if (session.mode == SessionMode.signedOut) return inAuth ? null : '/auth';
@@ -70,6 +74,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: '/legal/terms', builder: (_, __) => const LegalScreen(doc: LegalDoc.terms)),
+      GoRoute(path: '/legal/privacy', builder: (_, __) => const LegalScreen(doc: LegalDoc.privacy)),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(shell: shell),
         branches: [
@@ -122,6 +128,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'rewards', builder: (_, __) => const RewardsScreen()),
                 GoRoute(path: 'streaks', builder: (_, __) => const StreaksScreen()),
                 GoRoute(path: 'penalties', builder: (_, __) => const PenaltiesScreen()),
+                GoRoute(path: 'help', builder: (_, __) => const GlossaryScreen()),
                 GoRoute(
                   path: 'journal',
                   builder: (_, __) => const JournalScreen(),

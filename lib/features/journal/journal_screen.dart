@@ -12,11 +12,8 @@ import '../../core/widgets/rpg_card.dart';
 import '../../core/widgets/states.dart';
 import '../game/game_controller.dart';
 
-Color ratingColor(int r) => r >= 8
-    ? AppColors.success
-    : r >= 5
-        ? AppColors.gold
-        : AppColors.danger;
+/// Day ratings are shown as plain numbers; colour is not used for mood.
+Color ratingColor(int r) => AppColors.textSecondary;
 
 class JournalScreen extends ConsumerStatefulWidget {
   const JournalScreen({super.key});
@@ -155,7 +152,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                         ),
                         if (e.rating != null) ...[
                           const SizedBox(width: Gap.sm),
-                          Pill('${e.rating}/10', color: ratingColor(e.rating!), filled: true),
+                          Text('${e.rating}/10', style: AppText.number(13, color: AppColors.textSecondary)),
                         ],
                       ]),
                     ),

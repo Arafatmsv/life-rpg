@@ -28,7 +28,7 @@ Future<void> importProgressFromFile(BuildContext context, WidgetRef ref) async {
   final ok = await confirm(context,
       title: 'Заменить прогресс?',
       message: 'Будет загружен персонаж «${ch['name']}» из файла. Текущий прогресс на этом устройстве '
-          'будет заменён. Если он нужен — сначала сделайте экспорт.',
+          'будет заменён. Если он нужен, сначала сделайте экспорт.',
       confirmLabel: 'Импортировать',
       destructive: true);
   if (!ok || !context.mounted) return;

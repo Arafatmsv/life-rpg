@@ -9,7 +9,7 @@ enum SyncPhase {
   localOnly('Только на устройстве'),
   idle('Синхронизировано'),
   syncing('Синхронизация…'),
-  offline('Нет сети — изменения сохранены'),
+  offline('Нет сети, изменения сохранены'),
   error('Ошибка синхронизации');
 
   const SyncPhase(this.label);

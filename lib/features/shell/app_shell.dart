@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_theme.dart';
 import '../../core/responsive/responsive.dart';
+import '../../core/widgets/brand_mark.dart';
 import '../game/game_event_layer.dart';
 
 class _Dest {
@@ -89,12 +89,8 @@ class AppShell extends StatelessWidget {
                               : Padding(
                                   padding: const EdgeInsets.only(top: 12, bottom: 20),
                                   child: extended
-                                      ? Row(children: [
-                                          const _Sigil(),
-                                          const SizedBox(width: 10),
-                                          Text('Life RPG', style: AppText.display(24)),
-                                        ])
-                                      : const _Sigil(),
+                                      ? const BrandLockup()
+                                      : const BrandMark(size: 26),
                                 ),
                           destinations: [
                             for (final d in _destinations)
@@ -116,25 +112,6 @@ class AppShell extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _Sigil extends StatelessWidget {
-  const _Sigil();
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [accent.o(0.3), accent.o(0.04)]),
-        border: Border.all(color: accent.o(0.6)),
-      ),
-      child: Icon(Icons.auto_awesome_rounded, color: accent, size: 20),
     );
   }
 }

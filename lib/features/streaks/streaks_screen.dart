@@ -38,9 +38,7 @@ class StreaksScreen extends ConsumerWidget {
     ];
 
     final stats = RpgCard(
-      glow: AppColors.warning,
       child: Column(children: [
-        const Icon(Icons.local_fire_department_rounded, color: AppColors.warning, size: 44),
         Text('${st.current}', style: AppText.display(64)),
         Text('${plural(st.current, 'день', 'дня', 'дней')} подряд', style: AppText.ui(14, color: AppColors.textSecondary)),
         const SizedBox(height: Gap.md),
@@ -72,13 +70,13 @@ class StreaksScreen extends ConsumerWidget {
           weeks: 20,
           marks: {
             for (final m in s.dayMarks.values)
-              m.dayKey: m.kind == DayMarkKind.rest ? AppColors.violetBright : AppColors.info,
+              m.dayKey: m.kind == DayMarkKind.rest ? AppColors.text : AppColors.textMuted,
           },
         ),
         const SizedBox(height: Gap.xs),
         Wrap(spacing: Gap.md, children: [
-          _MarkLegend(AppColors.violetBright, 'день отдыха'),
-          _MarkLegend(AppColors.info, 'заморозка'),
+          _MarkLegend(AppColors.text, 'день отдыха'),
+          _MarkLegend(AppColors.textMuted, 'заморозка'),
         ]),
       ]),
     );
@@ -86,7 +84,7 @@ class StreaksScreen extends ConsumerWidget {
     final rest = RpgCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text('Дни отдыха', style: AppText.display(22)),
-        Text('Отдых — часть прогресса. Запланированный день отдыха не ломает серию и не даёт штрафов '
+        Text('Запланированный день отдыха не прерывает серию и не даёт штрафов '
             '(до ${GameEngine.maxRestDaysPerWeek} в неделю).',
             style: AppText.ui(12.5, color: AppColors.textMuted)),
         const SizedBox(height: Gap.md),
@@ -98,7 +96,6 @@ class StreaksScreen extends ConsumerWidget {
               return ChoiceChipX(
                 label: i == 0 ? 'Сегодня' : '${weekdayShort[weekdayOf(d) - 1]} ${parseDayKey(d).day}',
                 icon: marked ? Icons.bedtime_rounded : null,
-                color: AppColors.violetBright,
                 selected: marked,
                 onTap: () => runGameAction(context, ref, (e, st) => e.toggleRestDay(st, d)),
               );
@@ -108,7 +105,7 @@ class StreaksScreen extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Режим отдыха (отпуск, болезнь)'),
-          subtitle: const Text('Пока включён — нет штрафов, серия заморожена'),
+          subtitle: const Text('Пока включён, пропуски не фиксируются и серия заморожена'),
           value: set.vacationMode,
           onChanged: (v) => runGameAction(context, ref, (e, st) => e.updateSettings(st, (x) => x.copyWith(vacationMode: v)),
               success: v ? 'Режим отдыха включён. Восстанавливайтесь.' : 'С возвращением!'),
@@ -141,14 +138,13 @@ class StreaksScreen extends ConsumerWidget {
             Wrap(spacing: 8, runSpacing: 8, children: [
               for (final d in missedRecent)
                 ActionChip(
-                  avatar: const Icon(Icons.ac_unit_rounded, size: 16, color: AppColors.info),
                   label: Text('Заморозить ${humanDay(d)}'),
                   onPressed: freezesLeft <= 0
                       ? null
                       : () async {
                           final ok = await confirm(context,
                               title: 'Заморозить ${humanDay(d)}?',
-                              message: 'День будет считаться защищённым — серия не прервётся. '
+                              message: 'День будет защищён, и серия не прервётся. '
                                   'Останется заморозок: ${freezesLeft - 1}.');
                           if (ok && context.mounted) {
                             await runGameAction(context, ref, (e, st) => e.useStreakFreeze(st, d),

@@ -264,7 +264,7 @@ class GameEngine {
     final t = today(s);
     final logId = _v5(s, 'checkin:${q.id}:$t');
     if (s.progress.containsKey(logId)) {
-      throw const GameException('Сегодня отметка уже есть — возвращайтесь завтра');
+      throw const GameException('Сегодня отметка уже есть. Следующая завтра');
     }
     final d = _Draft(s);
     final now = clock.instant();
@@ -872,7 +872,7 @@ class GameEngine {
   void _ensureActionable(GameState s, Quest q) {
     if (q.status == QuestStatus.completed) throw const GameException('Задание уже выполнено');
     if (q.status == QuestStatus.failed) {
-      throw const GameException('Задание провалено — перенесите его на новую дату');
+      throw const GameException('Задание провалено. Перенесите его на новую дату');
     }
     if (!q.isOpen) throw const GameException('Задание не активно');
     if (!isDueToday(s, q)) throw const GameException('Сегодня это задание не запланировано');

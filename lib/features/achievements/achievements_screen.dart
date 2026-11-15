@@ -17,6 +17,7 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 class AchievementsScreen extends ConsumerStatefulWidget {
   const AchievementsScreen({super.key});
@@ -55,8 +56,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                     child: Row(children: [
                       ProgressRing(
                         value: s.achievements.length / achievementCatalog.length,
-                        color: AppColors.gold,
-                        size: 64,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 56,
+                        stroke: 3,
                         child: Text('${s.achievements.length}', style: AppText.number(18)),
                       ),
                       const SizedBox(width: Gap.md),
@@ -93,58 +95,56 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                       title: 'Пока ничего',
                       message: 'Здесь появятся полученные достижения.',
                     ),
-                  ResponsiveColumns(
-                    minItemWidth: 300,
-                    maxColumns: 3,
-                    spacing: Gap.sm,
-                    children: [
-                      for (final a in list)
+                  RpgCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(children: [
+                      for (var k = 0; k < list.length; k++) ...[
+                        if (k > 0) const Divider(height: 1, indent: Gap.md),
                         Builder(builder: (context) {
+                          final a = list[k];
                           final u = s.achievements[a.id];
-                          final c = AppColors.rarity(a.rarity);
                           final p = a.progress(snap).clamp(0, a.target);
-                          return RpgCard(
-                            glow: u != null ? c : null,
+                          return InkWell(
                             onTap: () => showRpgSheet(context, builder: (_) => _Details(id: a.id)),
-                            child: Opacity(
-                              opacity: u != null ? 1 : 0.7,
-                              child: Row(children: [
-                                IconTile(u == null ? Icons.lock_outline_rounded : RpgIcons.byKey(a.icon),
-                                    color: u == null ? AppColors.textMuted : c, size: 50),
-                                const SizedBox(width: Gap.md),
-                                Expanded(
-                                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Row(children: [
-                                      Expanded(
-                                        child: Text(a.title,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppText.ui(15, weight: FontWeight.w700)),
-                                      ),
-                                      Pill(a.rarity.tag, color: c),
-                                    ]),
-                                    const SizedBox(height: 2),
-                                    Text(a.description, style: AppText.ui(12.5, color: AppColors.textSecondary)),
-                                    const SizedBox(height: 6),
-                                    if (u != null)
-                                      Text(
-                                        'Получено ${humanDayYear(GameClock.dayOf(u.unlockedAt, s.settings.tzOffsetMinutes))} · '
-                                        '+${cfg.rarityXp[a.rarity]} XP · +${cfg.rarityGold[a.rarity]} Gold',
-                                        style: AppText.ui(11.5, color: c, weight: FontWeight.w700),
-                                      )
-                                    else
-                                      Row(children: [
-                                        Expanded(child: XpBar(value: p / a.target, height: 5, colors: [c.o(0.5), c], glow: false)),
-                                        const SizedBox(width: 8),
-                                        Text('$p/${a.target}', style: AppText.number(11, color: AppColors.textMuted)),
-                                      ]),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 12),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Row(children: [
+                                  Expanded(
+                                    child: Text(a.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppText.ui(15,
+                                            weight: FontWeight.w500,
+                                            color: u != null ? AppColors.text : AppColors.textSecondary)),
+                                  ),
+                                  Explain(
+                                    term: Term.rarity,
+                                    child: Text(a.rarity.tag,
+                                        style: AppText.ui(12.5, color: AppColors.rarity(a.rarity))),
+                                  ),
+                                ]),
+                                const SizedBox(height: 2),
+                                Text(a.description, style: AppText.ui(12.5, color: AppColors.textMuted)),
+                                const SizedBox(height: 6),
+                                if (u != null)
+                                  Text(
+                                    'Получено ${humanDayYear(GameClock.dayOf(u.unlockedAt, s.settings.tzOffsetMinutes))} · '
+                                    '+${cfg.rarityXp[a.rarity]} XP · +${cfg.rarityGold[a.rarity]} Gold',
+                                    style: AppText.ui(12, color: AppColors.textSecondary),
+                                  )
+                                else
+                                  Row(children: [
+                                    Expanded(child: XpBar(value: p / a.target, height: 3)),
+                                    const SizedBox(width: 8),
+                                    Text('$p / ${a.target}', style: AppText.number(11.5, color: AppColors.textMuted)),
                                   ]),
-                                ),
                               ]),
                             ),
                           );
                         }),
-                    ],
+                      ],
+                    ]),
                   ),
                 ]),
               ),

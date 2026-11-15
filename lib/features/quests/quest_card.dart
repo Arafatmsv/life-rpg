@@ -11,10 +11,10 @@ import '../../core/widgets/feedback.dart';
 import '../../core/widgets/motion.dart';
 import '../../core/widgets/progress.dart';
 import '../../core/widgets/rpg_card.dart';
-import '../../core/widgets/rpg_icons.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/quest.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 /// Primary action of a quest from a list: complete, log progress or
 /// check in. Shared by the card and the detail screen.
@@ -84,10 +84,7 @@ class QuestCard extends ConsumerWidget {
       child: RpgCard(
         padding: EdgeInsets.all(dense ? Gap.sm : Gap.md),
         onTap: () => context.push('/quests/${q.id}'),
-        borderColor: done ? AppColors.success.o(0.35) : (q.type == QuestType.boss ? AppColors.danger.o(0.3) : null),
-        gradient: done
-            ? LinearGradient(colors: [AppColors.success.o(0.07), AppColors.surface0])
-            : null,
+
         semanticLabel: '${q.title}, ${done ? 'выполнено' : 'не выполнено'}',
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +117,7 @@ class QuestCard extends ConsumerWidget {
                           q.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.ui(15, weight: FontWeight.w700).copyWith(
+                          style: AppText.ui(15, weight: FontWeight.w500).copyWith(
                             decoration: done && !q.isRecurring ? TextDecoration.lineThrough : null,
                             decorationColor: AppColors.textMuted,
                             color: done ? AppColors.textSecondary : AppColors.text,
@@ -128,36 +125,47 @@ class QuestCard extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: Gap.xs),
-                      Text('+$xp XP',
-                          style: AppText.number(13,
-                              color: done ? AppColors.textMuted : AppColors.violetBright)),
+                      Explain(
+                        term: Term.xp,
+                        child: Text('+$xp XP',
+                            style: AppText.number(13, color: done ? AppColors.textMuted : AppColors.textSecondary)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      Pill(q.type.label, color: AppColors.questType(q.type), icon: RpgIcons.questType(q.type)),
-                      Pill(q.attribute.code, color: color),
-                      if (!dense) Pill(q.difficulty.label, color: AppColors.difficulty(q.difficulty)),
-                      if (q.isRecovery) const Pill('Восстановление', color: AppColors.success, icon: Icons.healing_rounded),
-                      if (failed) const Pill('Провалено', color: AppColors.danger),
-                      if (q.isRecurring && !dueToday && !done) const Pill('Не сегодня', color: AppColors.textMuted),
+                  // One quiet meta line instead of a row of coloured tags.
+                  Explain(
+                    info: questTypeInfo(q.type, e.config),
+                    child: Text(
+                      [
+                        q.type.label,
+                        q.attribute.label,
+                        if (!dense) q.difficulty.label,
+                        if (q.recurrence.kind == RecurrenceKind.weekdays ||
+                            q.recurrence.kind == RecurrenceKind.interval)
+                          q.recurrence.describe(),
+                        if (q.durationMinutes != null && !dense) '${q.durationMinutes} мин',
+                        if (q.isRecurring && !dueToday && !done) 'не сегодня',
+                      ].join(' · '),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.ui(12.5, color: AppColors.textMuted),
+                    ),
+                  ),
+                  if (q.isRecovery || failed || (q.dueDay != null && q.periodKind == PeriodKind.once && !done)) ...[
+                    const SizedBox(height: 6),
+                    Wrap(spacing: 6, runSpacing: 4, children: [
+                      if (q.isRecovery) const Explain(term: Term.recovery, child: Pill('Восстановление')),
+                      if (failed) const Pill('Провалено', color: AppColors.danger, filled: true),
                       if (q.dueDay != null && q.periodKind == PeriodKind.once && !done)
                         _DuePill(q.dueDay!, e.today(s)),
-                      if (q.recurrence.kind == RecurrenceKind.weekdays ||
-                          q.recurrence.kind == RecurrenceKind.interval)
-                        Pill(q.recurrence.describe(), color: AppColors.textSecondary, icon: Icons.repeat_rounded),
-                      if (q.durationMinutes != null && !dense)
-                        Pill('${q.durationMinutes} мин', color: AppColors.textSecondary, icon: Icons.schedule_rounded),
-                    ],
-                  ),
+                    ]),
+                  ],
                   if (bar != null) ...[
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        Expanded(child: XpBar(value: bar, height: 6, colors: [color.o(0.6), color], glow: false)),
+                        Expanded(child: XpBar(value: bar, height: 3)),
                         const SizedBox(width: Gap.xs),
                         Text(barLabel!, style: AppText.number(11.5, color: AppColors.textMuted)),
                       ],
@@ -184,11 +192,11 @@ class _DuePill extends StatelessWidget {
     final (text, color) = left < 0
         ? ('Просрочено', AppColors.danger)
         : left == 0
-            ? ('Сегодня', AppColors.warning)
+            ? ('Срок сегодня', AppColors.text)
             : left == 1
-                ? ('Завтра', AppColors.warning)
-                : ('до ${humanDay(due)}', AppColors.textSecondary);
-    return Pill(text, color: color, icon: Icons.event_rounded);
+                ? ('Срок завтра', AppColors.textSecondary)
+                : ('До ${humanDay(due)}', AppColors.textSecondary);
+    return Pill(text, color: color);
   }
 }
 
@@ -230,7 +238,7 @@ class _CheckButtonState extends State<_CheckButton> with SingleTickerProviderSta
 
   @override
   Widget build(BuildContext context) {
-    final c = widget.done ? AppColors.success : widget.color;
+    final c = widget.done ? Theme.of(context).colorScheme.primary : AppColors.textSecondary;
     return Tooltip(
       message: widget.done ? 'Выполнено' : widget.tooltip,
       child: Semantics(
@@ -256,9 +264,8 @@ class _CheckButtonState extends State<_CheckButton> with SingleTickerProviderSta
                   height: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: widget.done ? c.o(0.2) : Colors.transparent,
-                    border: Border.all(color: widget.enabled || widget.done ? c : AppColors.border, width: 1.8),
-                    boxShadow: widget.done ? [BoxShadow(color: c.o(0.35), blurRadius: 12, spreadRadius: -2)] : null,
+                    color: widget.done ? c : Colors.transparent,
+                    border: Border.all(color: widget.done ? c : (widget.enabled ? AppColors.textSecondary : AppColors.border), width: 1.4),
                   ),
                   child: AnimatedSwitcher(
                     duration: Durations2.fast,
@@ -267,7 +274,7 @@ class _CheckButtonState extends State<_CheckButton> with SingleTickerProviderSta
                       widget.done ? Icons.check_rounded : widget.icon,
                       key: ValueKey(widget.done),
                       size: 18,
-                      color: widget.done ? c : (widget.enabled ? c.o(0.8) : AppColors.textMuted),
+                      color: widget.done ? AppColors.bg : (widget.enabled ? AppColors.text : AppColors.textMuted),
                     ),
                   ),
                 ),

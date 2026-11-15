@@ -15,6 +15,7 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../data/models/enums.dart';
 import '../game/game_controller.dart';
 import '../quests/quest_templates.dart';
+import '../legal/legal_links.dart';
 import '../settings/import_flow.dart';
 
 /// Character creation in five short steps.
@@ -173,14 +174,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         RpgButton(
                           label: 'Назад',
                           kind: RpgButtonKind.secondary,
-                          icon: Icons.arrow_back_rounded,
+
                           onPressed: _busy ? null : _back,
                         ),
                       if (_step > 0) const SizedBox(width: Gap.sm),
                       Expanded(
                         child: RpgButton(
                           label: _step == _steps - 1 ? 'Начать путь' : 'Далее',
-                          icon: _step == _steps - 1 ? Icons.auto_awesome_rounded : Icons.arrow_forward_rounded,
+
                           expand: true,
                           loading: _busy,
                           onPressed: _next,
@@ -210,15 +211,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _stepIdentity() => _scroll(
         'Создайте героя',
-        'Это вы — в мире, где реальные дела превращаются в опыт.',
+        'Это вы. Реальные дела будут превращаться в его опыт.',
         [
-          Center(child: AvatarEmblem(avatarId: _avatar, colorIndex: _color, size: 120)),
+          Center(child: AvatarEmblem(avatarId: _avatar, colorIndex: _color, size: 104)),
           const SizedBox(height: Gap.sm),
           Center(
-            child: TextButton.icon(
+            child: TextButton(
               onPressed: () => importProgressFromFile(context, ref),
-              icon: const Icon(Icons.upload_file_rounded, size: 18),
-              label: const Text('Загрузить прогресс из файла'),
+              child: const Text('Загрузить прогресс из файла'),
             ),
           ),
           const SizedBox(height: Gap.xl),
@@ -260,23 +260,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label: 'Цвет ${i + 1}',
                   child: GestureDetector(
                     onTap: () => setState(() => _color = i),
-                    child: AnimatedContainer(
-                      duration: Durations2.fast,
-                      width: 40,
-                      height: 40,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.avatarPalette[i],
-                        border: Border.all(
-                          color: _color == i ? AppColors.text : Colors.transparent,
-                          width: 2.5,
-                        ),
+                        border: Border.all(color: _color == i ? AppColors.text : Colors.transparent, width: 1.2),
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.avatarPalette[i]),
                       ),
                     ),
                   ),
                 ),
             ],
           ),
+          const SizedBox(height: Gap.xl),
+          const LegalLinks(),
         ],
       );
 
@@ -307,7 +308,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _stepClass() => _scroll(
         'Начальный класс',
-        'Стартовая специализация, а не окончательный выбор. Приоритеты можно менять в любой момент.',
+        'С чего начать. Класс задаёт стартовые приоритеты, их можно поменять в любой момент.',
         [
           for (final c in CharacterClass.values) ...[
             RpgCard(
@@ -317,33 +318,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ..clear()
                   ..addAll(c.defaultFocus);
               }),
-              glow: _class == c ? Theme.of(context).colorScheme.primary : null,
+              borderColor: _class == c ? Theme.of(context).colorScheme.primary : null,
               child: Row(
                 children: [
-                  IconTile(RpgIcons.characterClass(c),
-                      color: _class == c ? Theme.of(context).colorScheme.primary : AppColors.textSecondary,
-                      size: 46),
-                  const SizedBox(width: Gap.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(c.label, style: AppText.ui(16, weight: FontWeight.w700)),
+                        Text(c.label, style: AppText.ui(16, weight: FontWeight.w600)),
                         const SizedBox(height: 2),
                         Text(c.description, style: AppText.ui(13, color: AppColors.textSecondary)),
                         if (c.defaultFocus.isNotEmpty) ...[
                           const SizedBox(height: 6),
-                          Wrap(spacing: 6, runSpacing: 4, children: [
-                            for (final a in c.defaultFocus)
-                              Pill(a.label, color: AppColors.attribute(a), icon: RpgIcons.attribute(a)),
-                          ]),
+                          Text('Фокус: ${c.defaultFocus.map((a) => a.label.toLowerCase()).join(', ')}',
+                              style: AppText.ui(12.5, color: AppColors.textMuted)),
                         ],
                       ],
                     ),
                   ),
-                  Icon(
-                    _class == c ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                    color: _class == c ? Theme.of(context).colorScheme.primary : AppColors.textMuted,
+                  Radio<CharacterClass>(
+                    value: c,
+                    groupValue: _class,
+                    onChanged: (v) => setState(() {
+                      _class = c;
+                      _focus
+                        ..clear()
+                        ..addAll(c.defaultFocus);
+                    }),
                   ),
                 ],
               ),

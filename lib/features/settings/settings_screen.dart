@@ -247,6 +247,23 @@ class SettingsScreen extends ConsumerWidget {
                       ],
                     ],
                   ),
+                  SettingsGroup(title: 'Документы', children: [
+                    ListTile(
+                      title: const Text('Как устроена игра'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.push('/profile/help'),
+                    ),
+                    ListTile(
+                      title: const Text('Условия использования'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.push('/legal/terms'),
+                    ),
+                    ListTile(
+                      title: const Text('Политика конфиденциальности'),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.push('/legal/privacy'),
+                    ),
+                  ]),
                   Center(
                     child: Text('Life RPG 0.1.0', style: AppText.ui(12, color: AppColors.textMuted)),
                   ),

@@ -14,6 +14,7 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 import 'activity_heatmap.dart';
 import 'analytics_data.dart';
 
@@ -65,20 +66,25 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         ),
     ]);
 
-    final tiles = ResponsiveColumns(
-      minItemWidth: 150,
-      maxColumns: 4,
-      spacing: Gap.sm,
-      children: [
-        _Tile('Опыт за период', '${data.xpInRange}', 'XP'),
-        _Tile('Выполнено за период', '${data.completionsInRange}', plural(data.completionsInRange, 'задание', 'задания', 'заданий')),
-        _Tile('Всего опыта', '${snap.level.totalXp}', 'уровень ${snap.level.level}'),
-        _Tile('Всего выполнено', '${st.totalCompletions}', 'пропущено ${st.failedCount}'),
-        _Tile('Миссий завершено', '${st.missionsCompleted}', 'испытаний ${st.bossesCompleted}'),
-        _Tile('Время на развитие', _hours(st.minutesSpent), 'по заданиям с длительностью'),
-        _Tile('Достижения', '${st.achievementsCount}', 'получено'),
-        _Tile('Лучшая серия', '${snap.streak.longest}', plural(snap.streak.longest, 'день', 'дня', 'дней')),
-      ],
+    // One table of facts instead of a grid of boxed tiles.
+    final tiles = RpgCard(
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.xs),
+      child: ResponsiveColumns(
+        minItemWidth: 260,
+        maxColumns: 2,
+        spacing: 0,
+        children: [
+          _Fact('Опыт за период', '${data.xpInRange} XP', term: Term.xp),
+          _Fact('Выполнено за период', '${data.completionsInRange}'),
+          _Fact('Всего опыта', '${snap.level.totalXp} XP · уровень ${snap.level.level}', term: Term.level),
+          _Fact('Всего выполнено', '${st.totalCompletions} · пропущено ${st.failedCount}', term: Term.penalty),
+          _Fact('Миссий и испытаний', '${st.missionsCompleted} · ${st.bossesCompleted}', term: Term.mission),
+          _Fact('Время на развитие', _hours(st.minutesSpent)),
+          _Fact('Достижения', '${st.achievementsCount}', term: Term.rarity),
+          _Fact('Лучшая серия', '${snap.streak.longest} ${plural(snap.streak.longest, 'день', 'дня', 'дней')}',
+              term: Term.streak),
+        ],
+      ),
     );
 
     final xpChart = RpgCard(
@@ -91,7 +97,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             icon: Icon(_table ? Icons.bar_chart_rounded : Icons.table_rows_rounded),
           ),
         ]),
-        Text('${humanDay(data.from)} — ${humanDay(data.to)} · нажмите на столбец',
+        Text('${humanDay(data.from)} – ${humanDay(data.to)} · нажмите на столбец',
             style: AppText.ui(12, color: AppColors.textMuted)),
         const SizedBox(height: Gap.md),
         if (_table) _DataTable(buckets: data.buckets) else _XpBars(buckets: data.buckets),
@@ -121,7 +127,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             _HBar(
               label: a.label,
               icon: RpgIcons.attribute(a),
-              color: AppColors.attribute(a),
+              color: AppColors.textSecondary,
               value: data.byAttribute[a]!,
               max: maxAttr,
               trailing: '${data.byAttribute[a]} · ${(data.byAttribute[a]! * 100 / totalByAttr).round()}%',
@@ -139,7 +145,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           _HBar(
             label: a.label,
             icon: RpgIcons.attribute(a),
-            color: AppColors.attribute(a),
+            color: AppColors.textSecondary,
             value: snap.attributeLevels[a]!.level,
             max: maxLvl,
             fraction: (snap.attributeLevels[a]!.level - 1 + snap.attributeLevels[a]!.progress) / maxLvl,
@@ -160,7 +166,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     final ratio = RpgCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text('Выполнено и пропущено', style: AppText.display(22)),
-        Text('Пропуск — повод вернуться, а не приговор', style: AppText.ui(12, color: AppColors.textMuted)),
+        Text('Пропуски видны, чтобы вовремя вернуться в ритм.', style: AppText.ui(12, color: AppColors.textMuted)),
         const SizedBox(height: Gap.md),
         if (done + missed == 0)
           Text('Нет данных за период', style: AppText.ui(13, color: AppColors.textMuted))
@@ -178,10 +184,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
           ),
           const SizedBox(height: Gap.sm),
           Wrap(spacing: Gap.lg, runSpacing: 6, children: [
-            _Legend(color: AppColors.statusGood, icon: Icons.check_circle_rounded,
-                text: 'Выполнено: $done (${(done * 100 / (done + missed)).round()}%)'),
-            _Legend(color: AppColors.statusCritical, icon: Icons.cancel_rounded,
-                text: 'Пропущено: $missed (${(missed * 100 / (done + missed)).round()}%)'),
+            _Legend(color: AppColors.statusGood, text: 'Выполнено: $done (${(done * 100 / (done + missed)).round()}%)'),
+            _Legend(color: AppColors.statusCritical, text: 'Пропущено: $missed (${(missed * 100 / (done + missed)).round()}%)'),
           ]),
         ],
       ]),
@@ -219,39 +223,40 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       minutes < 60 ? '$minutes мин' : '${(minutes / 60).toStringAsFixed(minutes < 600 ? 1 : 0)} ч';
 }
 
-class _Tile extends StatelessWidget {
-  const _Tile(this.label, this.value, this.caption);
+class _Fact extends StatelessWidget {
+  const _Fact(this.label, this.value, {this.term});
   final String label;
   final String value;
-  final String caption;
+  final Term? term;
 
   @override
-  Widget build(BuildContext context) => RpgCard(
-        padding: const EdgeInsets.all(Gap.sm),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(12, color: AppColors.textMuted)),
-          const SizedBox(height: 4),
-          Text(value, style: AppText.number(24)),
-          Text(caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(11.5, color: AppColors.textSecondary)),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(children: [
+        Expanded(child: Text(label, style: AppText.ui(13.5, color: AppColors.textSecondary))),
+        const SizedBox(width: Gap.sm),
+        Text(value, style: AppText.number(14, weight: FontWeight.w500)),
+      ]),
+    );
+    return term == null ? row : Explain(term: term, child: row);
+  }
 }
 
+/// Legend key: a small square swatch next to the label.
 class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.icon, required this.text});
+  const _Legend({required this.color, required this.text});
   final Color color;
-  final IconData icon;
   final String text;
 
   @override
   Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 16, color: color),
+        Container(width: 10, height: 10, color: color),
         const SizedBox(width: 6),
         Text(text, style: AppText.ui(13, color: AppColors.textSecondary)),
       ]);
 }
 
-/// Labeled horizontal bar with the value in text ink beside it.
 class _HBar extends StatelessWidget {
   const _HBar({
     required this.label,

@@ -14,6 +14,7 @@ import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/penalty.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 /// The log of missed obligations and the ways back.
 class PenaltiesScreen extends ConsumerWidget {
@@ -48,15 +49,13 @@ class PenaltiesScreen extends ConsumerWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   RpgCard(
                     child: Row(children: [
-                      const IconTile(Icons.healing_rounded, color: AppColors.success, size: 46),
-                      const SizedBox(width: Gap.md),
                       Expanded(
                         child: Text(
                           s.settings.penaltiesEnabled
-                              ? 'Пропуск не стирает прогресс. Выполните восстановительное задание, '
+                              ? 'Накопленный прогресс сохраняется. Выполните восстановительное задание, '
                                   'перенесите дело или отметьте уважительную причину '
                                   '(осталось в этом месяце: $excusesLeft).'
-                              : 'Последствия выключены в настройках — пропуски не фиксируются.',
+                              : 'Последствия выключены в настройках, пропуски не фиксируются.',
                           style: AppText.ui(13.5, color: AppColors.textSecondary, height: 1.45),
                         ),
                       ),
@@ -123,7 +122,7 @@ class _PenaltyCard extends ConsumerWidget {
                 Text('${p.kind.label} · ${humanDayYear(p.dayKey)}', style: AppText.ui(12, color: AppColors.textMuted)),
               ]),
             ),
-            Pill(resolved ? p.status.label : p.severity.label, color: resolved ? AppColors.success : c),
+            Explain(term: Term.penalty, child: Pill(resolved ? p.status.label : p.severity.label, color: resolved ? AppColors.textSecondary : c)),
           ]),
           if (consequences.isNotEmpty) ...[
             const SizedBox(height: Gap.xs),
@@ -134,7 +133,6 @@ class _PenaltyCard extends ConsumerWidget {
             Wrap(spacing: 8, runSpacing: 8, children: [
               if (recovery != null && recovery.isOpen)
                 ActionChip(
-                  avatar: const Icon(Icons.healing_rounded, size: 16, color: AppColors.success),
                   label: Text('Восстановить: ${recovery.title.replaceFirst('Восстановление: ', '')}'),
                   onPressed: () => context.push('/quests/${recovery.id}'),
                 ),

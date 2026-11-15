@@ -29,7 +29,7 @@ class ExportService {
     await SharePlus.instance.share(ShareParams(
       files: [XFile.fromData(bytes, name: name, mimeType: 'application/json')],
       fileNameOverrides: [name],
-      subject: 'Life RPG — экспорт данных',
+      subject: 'Life RPG: экспорт данных',
     ));
   }
 

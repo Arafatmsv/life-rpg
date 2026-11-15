@@ -361,7 +361,7 @@ class _QuestEditorState extends ConsumerState<QuestEditor> {
                       decoration: const InputDecoration(labelText: 'Единица'),
                       items: [
                         for (final u in MetricUnit.values)
-                          DropdownMenuItem(value: u, child: Text(u == MetricUnit.none ? '—' : u.label)),
+                          DropdownMenuItem(value: u, child: Text(u == MetricUnit.none ? 'Нет' : u.label)),
                       ],
                       onChanged: (u) => setState(() => _unit = u ?? MetricUnit.none),
                     ),

@@ -49,7 +49,7 @@ jobs:
 
       - name: Build web
         run: >
-          flutter build web --release
+          flutter build web --release --no-web-resources-cdn
           --base-href "/${{ github.event.repository.name }}/"
           --dart-define-from-file=env.json
 

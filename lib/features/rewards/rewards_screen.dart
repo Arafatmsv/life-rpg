@@ -18,6 +18,7 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../core/widgets/states.dart';
 import '../../data/models/reward.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 class RewardsScreen extends ConsumerWidget {
   const RewardsScreen({super.key});
@@ -32,20 +33,19 @@ class RewardsScreen extends ConsumerWidget {
     final gold = s.gold.values.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final tz = s.settings.tzOffsetMinutes;
 
-    final balance = RpgCard(
-      glow: AppColors.gold,
-      child: Row(children: [
-        const IconTile(Icons.paid_rounded, color: AppColors.gold, size: 52),
-        const SizedBox(width: Gap.md),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${snap.gold} Gold', style: AppText.display(32, color: AppColors.gold)),
-            Text('Gold начисляется за задания, уровни и достижения. Покупка — это обещание себе, '
-                'приложение ничего не покупает за вас.',
-                style: AppText.ui(12.5, color: AppColors.textSecondary)),
-          ]),
-        ),
-      ]),
+    final balance = Explain(
+      term: Term.gold,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Gap.xs),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Баланс', style: AppText.ui(13, color: AppColors.textSecondary)),
+          const SizedBox(height: 2),
+          Text('${snap.gold} Gold', style: AppText.number(30, color: AppColors.text)),
+          const SizedBox(height: Gap.xs),
+          Text('Награды назначаете вы сами. Приложение ничего не покупает и не списывает реальные деньги.',
+              style: AppText.ui(13, color: AppColors.textMuted, height: 1.45)),
+        ]),
+      ),
     );
 
     final shop = rewards.isEmpty
@@ -56,61 +56,14 @@ class RewardsScreen extends ConsumerWidget {
             actionLabel: 'Новая награда',
             onAction: () => _edit(context),
           )
-        : ResponsiveColumns(
-            minItemWidth: 260,
-            maxColumns: 3,
-            spacing: Gap.sm,
-            children: [
-              for (final r in rewards)
-                RpgCard(
-                  onTap: () => _edit(context, r),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Row(children: [
-                      IconTile(RpgIcons.byKey(r.icon), color: AppColors.gold, size: 44),
-                      const SizedBox(width: Gap.sm),
-                      Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(15, weight: FontWeight.w700)),
-                          if (r.description.isNotEmpty)
-                            Text(r.description,
-                                maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(12, color: AppColors.textMuted)),
-                        ]),
-                      ),
-                    ]),
-                    const SizedBox(height: Gap.sm),
-                    XpBar(
-                      value: snap.gold / r.cost,
-                      height: 5,
-                      colors: const [AppColors.goldDeep, AppColors.gold],
-                      glow: false,
-                    ),
-                    const SizedBox(height: Gap.sm),
-                    Row(children: [
-                      const Icon(Icons.paid_rounded, size: 16, color: AppColors.gold),
-                      const SizedBox(width: 4),
-                      Text('${r.cost}', style: AppText.number(16, color: AppColors.gold)),
-                      const Spacer(),
-                      RpgButton(
-                        label: snap.gold >= r.cost ? 'Купить' : 'Ещё ${r.cost - snap.gold}',
-                        compact: true,
-                        kind: snap.gold >= r.cost ? RpgButtonKind.primary : RpgButtonKind.secondary,
-                        onPressed: snap.gold >= r.cost
-                            ? () async {
-                                final ok = await confirm(context,
-                                    title: 'Купить «${r.title}»?',
-                                    message: 'С баланса спишется ${r.cost} Gold (останется ${snap.gold - r.cost}). '
-                                        'Покупку можно отменить в истории.',
-                                    confirmLabel: 'Купить');
-                                if (ok && context.mounted) {
-                                  await runGameAction(context, ref, (e, s) => e.purchaseReward(s, r.id));
-                                }
-                              }
-                            : null,
-                      ),
-                    ]),
-                  ]),
-                ),
-            ],
+        : RpgCard(
+            padding: EdgeInsets.zero,
+            child: Column(children: [
+              for (var k = 0; k < rewards.length; k++) ...[
+                if (k > 0) const Divider(height: 1, indent: Gap.md),
+                _RewardRow(reward: rewards[k], gold: snap.gold, onEdit: () => _edit(context, rewards[k])),
+              ],
+            ]),
           );
 
     final history = purchases.isEmpty
@@ -124,9 +77,6 @@ class RewardsScreen extends ConsumerWidget {
               RpgCard(
                 padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.sm),
                 child: Row(children: [
-                  Icon(p.isRefunded ? Icons.undo_rounded : Icons.check_circle_rounded,
-                      color: p.isRefunded ? AppColors.textMuted : AppColors.gold),
-                  const SizedBox(width: Gap.sm),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(p.rewardTitle, style: AppText.ui(14.5, weight: FontWeight.w700)),
@@ -195,6 +145,55 @@ class RewardsScreen extends ConsumerWidget {
 
   void _edit(BuildContext context, [Reward? r]) =>
       showRpgSheet(context, builder: (_) => _RewardEditor(reward: r));
+}
+
+class _RewardRow extends ConsumerWidget {
+  const _RewardRow({required this.reward, required this.gold, required this.onEdit});
+  final Reward reward;
+  final int gold;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = reward;
+    final enough = gold >= r.cost;
+    return InkWell(
+      onTap: onEdit,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 12),
+        child: Row(children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(15, weight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              Text(
+                enough ? '${r.cost} Gold' : '${r.cost} Gold · не хватает ${r.cost - gold}',
+                style: AppText.ui(12.5, color: AppColors.textMuted),
+              ),
+            ]),
+          ),
+          const SizedBox(width: Gap.sm),
+          RpgButton(
+            label: 'Купить',
+            compact: true,
+            kind: enough ? RpgButtonKind.primary : RpgButtonKind.secondary,
+            onPressed: enough
+                ? () async {
+                    final ok = await confirm(context,
+                        title: 'Купить «${r.title}»?',
+                        message: 'С баланса спишется ${r.cost} Gold, останется ${gold - r.cost}. '
+                            'Покупку можно отменить в истории.',
+                        confirmLabel: 'Купить');
+                    if (ok && context.mounted) {
+                      await runGameAction(context, ref, (e, s) => e.purchaseReward(s, r.id));
+                    }
+                  }
+                : null,
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 class _RewardEditor extends ConsumerStatefulWidget {

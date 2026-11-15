@@ -16,7 +16,9 @@ import '../../core/widgets/rpg_icons.dart';
 import '../../data/models/character.dart';
 import '../../data/models/enums.dart';
 import '../../data/repositories/sync_service.dart';
+import '../../app/providers.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 
 String greeting(DateTime now) {
   final h = now.hour;
@@ -36,16 +38,9 @@ class CharacterHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
     final l = snap.level;
     return RpgCard(
       padding: EdgeInsets.all(large ? Gap.xl : Gap.lg),
-      glow: AppColors.violet,
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF1F1A30), AppColors.surface1, AppColors.surface0],
-      ),
       onTap: () => context.go('/character'),
       semanticLabel: '${character.name}, уровень ${l.level}',
       child: Column(
@@ -53,64 +48,63 @@ class CharacterHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              AvatarEmblem(
-                avatarId: character.avatarId,
-                colorIndex: character.avatarColor,
-                level: l.level,
-                size: large ? 104 : 84,
+              Explain(
+                term: Term.level,
+                child: AvatarEmblem(
+                  avatarId: character.avatarId,
+                  colorIndex: character.avatarColor,
+                  level: l.level,
+                  size: large ? 88 : 72,
+                ),
               ),
               const SizedBox(width: Gap.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(greeting(DateTime.now()), style: AppText.ui(13, color: AppColors.textSecondary)),
                     Text(character.name,
-                        maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.display(large ? 34 : 30)),
+                        maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.display(large ? 32 : 28)),
                     const SizedBox(height: 2),
-                    Row(children: [
-                      Icon(RpgIcons.characterClass(character.characterClass), size: 14, color: accent),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(character.characterClass.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.ui(13, weight: FontWeight.w700, color: accent)),
-                      ),
-                    ]),
+                    Text('${character.characterClass.label} · уровень ${l.level}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.ui(13.5, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
-              const SyncBadge(),
+              const Explain(term: Term.sync, child: SyncBadge()),
             ],
           ),
           const SizedBox(height: Gap.lg),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('УРОВЕНЬ ${l.level}', style: AppText.label(color: AppColors.text)),
-              const Spacer(),
-              Text('${l.xpIntoLevel} / ${l.xpForNext} XP', style: AppText.number(12.5, color: AppColors.textSecondary)),
-            ],
+          Explain(
+            term: Term.xp,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Text('Опыт', style: AppText.ui(13, color: AppColors.textSecondary)),
+                    const Spacer(),
+                    Text('${l.xpIntoLevel} / ${l.xpForNext}', style: AppText.number(13, color: AppColors.text)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                XpBar(value: l.progress, height: 4),
+                const SizedBox(height: 6),
+                Text('До уровня ${l.level + 1}: ${l.xpRemaining} XP',
+                    style: AppText.ui(12, color: AppColors.textMuted)),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          XpBar(value: l.progress, height: 12),
-          const SizedBox(height: 6),
-          Text('Всего ${l.totalXp} XP · до ${l.level + 1}-го уровня ${l.xpRemaining} XP',
-              style: AppText.ui(12, color: AppColors.textMuted)),
           const SizedBox(height: Gap.md),
-          Wrap(
-            spacing: Gap.sm,
-            runSpacing: Gap.xs,
+          const Divider(height: 1),
+          const SizedBox(height: Gap.md),
+          Row(
             children: [
-              _Stat(icon: Icons.paid_rounded, color: AppColors.gold, value: '${snap.gold}', label: 'Gold'),
-              _Stat(
-                  icon: Icons.local_fire_department_rounded,
-                  color: AppColors.warning,
-                  value: '${snap.streak.current}',
-                  label: 'серия'),
-              _Stat(icon: Icons.military_tech_rounded, color: AppColors.violetBright, value: '${snap.rating}', label: 'рейтинг'),
-              _Stat(icon: Icons.account_tree_rounded, color: AppColors.info, value: '${snap.skillPoints}', label: 'SP'),
+              Expanded(child: _Stat(term: Term.gold, value: '${snap.gold}', label: 'Gold')),
+              Expanded(child: _Stat(term: Term.streak, value: '${snap.streak.current}', label: 'Серия')),
+              Expanded(child: _Stat(term: Term.rating, value: '${snap.rating}', label: 'Рейтинг')),
+              Expanded(child: _Stat(term: Term.sp, value: '${snap.skillPoints}', label: 'SP')),
             ],
           ),
         ],
@@ -119,33 +113,30 @@ class CharacterHeader extends StatelessWidget {
   }
 }
 
+/// Number over a caption. Long-press explains it.
 class _Stat extends StatelessWidget {
-  const _Stat({required this.icon, required this.color, required this.value, required this.label});
-  final IconData icon;
-  final Color color;
+  const _Stat({required this.term, required this.value, required this.label});
+  final Term term;
   final String value;
   final String label;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.bg.o(0.4),
-          borderRadius: Radii.rSm,
-          border: Border.all(color: AppColors.borderSoft),
+  Widget build(BuildContext context) => Explain(
+        term: term,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: AppText.number(18, color: AppColors.text)),
+            const SizedBox(height: 2),
+            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(12, color: AppColors.textMuted)),
+          ],
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
-          Text(value, style: AppText.number(14, color: AppColors.text)),
-          const SizedBox(width: 4),
-          Text(label, style: AppText.ui(12, color: AppColors.textMuted)),
-        ]),
       );
 }
 
-/// Compact attribute tile with level and progress.
-class AttributeTile extends StatelessWidget {
+/// One attribute as a list row: icon, name, level and a thin bar.
+/// Tap opens details, long-press explains the attribute.
+class AttributeTile extends ConsumerWidget {
   const AttributeTile({super.key, required this.attribute, required this.level, this.focus = false});
 
   final AttributeType attribute;
@@ -153,39 +144,38 @@ class AttributeTile extends StatelessWidget {
   final bool focus;
 
   @override
-  Widget build(BuildContext context) {
-    final c = AppColors.attribute(attribute);
-    return RpgCard(
-      padding: const EdgeInsets.all(Gap.sm),
-      radius: Radii.md,
-      onTap: () => context.push('/character/attribute/${attribute.name}'),
-      borderColor: focus ? c.o(0.45) : null,
-      semanticLabel: '${attribute.label}, уровень ${level.level}',
-      child: Row(
-        children: [
-          IconTile(RpgIcons.attribute(attribute), color: c, size: 36),
-          const SizedBox(width: Gap.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cfg = ref.watch(engineProvider).config;
+    return Explain(
+      info: attributeInfo(attribute, cfg),
+      child: InkWell(
+        onTap: () => context.push('/character/attribute/${attribute.name}'),
+        child: Semantics(
+          label: '${attribute.label}, уровень ${level.level}',
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
               children: [
-                Row(children: [
-                  Expanded(
-                    child: Text(attribute.code,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.ui(11, weight: FontWeight.w700, color: c, spacing: 0.8)),
+                Icon(RpgIcons.attribute(attribute), size: 18, color: AppColors.textSecondary),
+                const SizedBox(width: Gap.sm),
+                Expanded(
+                  flex: 5,
+                  child: Text(
+                    focus ? '${attribute.label} · фокус' : attribute.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.ui(14),
                   ),
-                  if (focus) Icon(Icons.star_rounded, size: 12, color: c),
-                  const SizedBox(width: 2),
-                  Text('${level.level}', style: AppText.number(15)),
-                ]),
-                const SizedBox(height: 6),
-                XpBar(value: level.progress, height: 5, colors: [c.o(0.55), c], glow: false),
+                ),
+                Expanded(flex: 4, child: XpBar(value: level.progress, height: 3)),
+                SizedBox(
+                  width: 36,
+                  child: Text('${level.level}', textAlign: TextAlign.right, style: AppText.number(14)),
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -263,28 +253,23 @@ class _RadarPainter extends CustomPainter {
       i == 0 ? shape.moveTo(o.dx, o.dy) : shape.lineTo(o.dx, o.dy);
     }
     shape.close();
-    canvas.drawPath(
-      shape,
-      Paint()
-        ..shader = RadialGradient(colors: [AppColors.violet.o(0.45), accent.o(0.25)])
-            .createShader(Rect.fromCircle(center: c, radius: r)),
-    );
+    canvas.drawPath(shape, Paint()..color = accent.o(0.12));
     canvas.drawPath(
       shape,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = accent.o(0.9),
+        ..strokeWidth = 1.5
+        ..color = accent,
     );
 
     for (var i = 0; i < n; i++) {
       final a = AttributeType.values[i];
       final v = (values[a]! / maxV).clamp(0.04, 1.0) * t;
-      canvas.drawCircle(pt(i, v), 3.5, Paint()..color = AppColors.attribute(a));
+      canvas.drawCircle(pt(i, v), 2.5, Paint()..color = accent);
       final tp = TextPainter(
         text: TextSpan(
           text: '${a.code.substring(0, 3)} ${values[a]!.floor() + 1}',
-          style: AppText.ui(10.5, weight: FontWeight.w700, color: AppColors.attribute(a)),
+          style: AppText.ui(10.5, weight: FontWeight.w500, color: AppColors.textSecondary),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

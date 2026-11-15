@@ -12,12 +12,12 @@ import '../../core/responsive/responsive.dart';
 import '../../core/utils/day.dart';
 import '../../core/widgets/progress.dart';
 import '../../core/widgets/rpg_card.dart';
-import '../../core/widgets/rpg_icons.dart';
 import '../../core/widgets/states.dart';
 import '../../data/models/enums.dart';
 import '../../app/providers.dart';
 import '../character/character_screen.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 import '../quests/quest_card.dart';
 import '../quests/quest_editor.dart';
 
@@ -51,12 +51,9 @@ class AttributeDetailScreen extends ConsumerWidget {
     final maxY = perDay.values.fold<int>(10, (m, v) => v > m ? v : m).toDouble();
 
     final head = RpgCard(
-      glow: c,
       padding: const EdgeInsets.all(Gap.lg),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          IconTile(RpgIcons.attribute(a), color: c, size: 56),
-          const SizedBox(width: Gap.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(a.code, style: AppText.label(color: c)),
@@ -77,9 +74,9 @@ class AttributeDetailScreen extends ConsumerWidget {
             style: AppText.ui(12, color: AppColors.textMuted)),
         const SizedBox(height: Gap.md),
         Wrap(spacing: 6, runSpacing: 6, children: [
-          Pill('Навыки $unlocked/${skills.length}', color: c, icon: Icons.account_tree_rounded),
-          if (bonus > 0) Pill('Бонус навыков +${(bonus * 100).round()}% XP', color: AppColors.violetBright),
-          if (s.character!.focus.contains(a)) Pill('Фокус +10% XP', color: AppColors.gold, icon: Icons.star_rounded),
+          Explain(term: Term.skillTree, child: Pill('Навыки $unlocked/${skills.length}')),
+          if (bonus > 0) Explain(term: Term.skillTree, child: Pill('Бонус навыков +${(bonus * 100).round()}% XP')),
+          if (s.character!.focus.contains(a)) const Explain(term: Term.focus, child: Pill('Фокус +10% XP')),
         ]),
         const SizedBox(height: Gap.md),
         OutlinedButton.icon(

@@ -245,6 +245,16 @@ ThemeData buildTheme(AccentTheme accentTheme) {
       tabAlignment: TabAlignment.start,
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(color: accent),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: accent,
+      foregroundColor: AppColors.bg,
+      elevation: 0,
+      focusElevation: 0,
+      hoverElevation: 0,
+      highlightElevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: Radii.rLg),
+      extendedTextStyle: AppText.ui(14, weight: FontWeight.w500),
+    ),
     listTileTheme: ListTileThemeData(
       iconColor: AppColors.textSecondary,
       titleTextStyle: AppText.ui(15, weight: FontWeight.w600),

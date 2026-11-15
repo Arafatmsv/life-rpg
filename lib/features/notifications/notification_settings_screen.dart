@@ -60,7 +60,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: Gap.lg),
                       child: Text(
-                        'На этой платформе системные уведомления недоступны — настройки сохранятся и '
+                        'На этой платформе системные уведомления недоступны. Настройки сохранятся и '
                         'заработают в мобильном приложении.',
                         style: AppText.ui(13, color: AppColors.warning),
                       ),
@@ -75,7 +75,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
                         onPressed: () async {
                           final ok = await ref.read(notificationServiceProvider).requestPermission();
                           if (context.mounted) {
-                            showMessage(context, ok ? 'Уведомления разрешены' : 'Разрешение не выдано — его можно включить в настройках системы',
+                            showMessage(context, ok ? 'Уведомления разрешены' : 'Разрешение не выдано. Его можно включить в настройках системы',
                                 error: !ok);
                           }
                         },

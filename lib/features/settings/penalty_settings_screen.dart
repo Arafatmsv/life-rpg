@@ -54,7 +54,7 @@ class PenaltySettingsScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: Gap.lg),
                     child: Text(
-                      'Последствия — игровые: отметка в журнале, потеря бонуса серии, восстановительное задание. '
+                      'Последствия только игровые: отметка в журнале, потеря бонуса серии, восстановительное задание. '
                       'Никаких реальных наказаний. Пропуск одного дня не уничтожает накопленный прогресс.',
                       style: AppText.ui(13.5, color: AppColors.textSecondary, height: 1.5),
                     ),
@@ -81,7 +81,7 @@ class PenaltySettingsScreen extends ConsumerWidget {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text('Строгость', style: AppText.ui(15, weight: FontWeight.w600)),
                         const SizedBox(height: 2),
-                        Text('Мягкая снижает уровень последствий на ступень, строгая — повышает',
+                        Text('Мягкая снижает уровень последствий на ступень, строгая повышает',
                             style: AppText.ui(12.5, color: AppColors.textMuted)),
                         const SizedBox(height: Gap.xs),
                         Wrap(spacing: 8, children: [
@@ -98,7 +98,7 @@ class PenaltySettingsScreen extends ConsumerWidget {
                   SettingsGroup(
                     title: 'Последствия по типам заданий',
                     footer: 'Лёгкое: отметка и потеря бонуса серии на день. Среднее: бонус серии на 3 дня и '
-                        'восстановительное задание. Серьёзное: провал миссии, задание восстановления и — если включено — потеря Gold.',
+                        'восстановительное задание. Серьёзное: провал миссии, восстановительное задание и потеря Gold, если она включена.',
                     children: [
                       for (final t in QuestType.values)
                         Padding(

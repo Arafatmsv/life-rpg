@@ -111,7 +111,7 @@ class NotificationService {
 
     var budget = 60; // iOS keeps at most 64 pending notifications
     if (n.dailyReminder) {
-      await _daily(1, n.dailyReminderTime, 'Новый день — новые задания',
+      await _daily(1, n.dailyReminderTime, 'Задания на сегодня',
           'Загляните в журнал заданий: опыт ждёт.');
       budget--;
     }
@@ -151,7 +151,7 @@ class NotificationService {
       if (n.deadlineReminders && q.dueDay != null && q.periodKind == PeriodKind.once) {
         final dayBefore = addDays(q.dueDay!, -1);
         if (await _once(base + 7, dayBefore, '10:00', 'Дедлайн завтра: ${q.title}',
-            'Остался один день — ещё можно успеть.')) {
+            'Остался один день.')) {
           budget--;
         }
       }

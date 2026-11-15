@@ -19,6 +19,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/quest.dart';
 import '../character/character_widgets.dart';
 import '../game/game_controller.dart';
+import '../help/glossary.dart';
 import '../quests/quest_card.dart';
 import '../quests/quest_editor.dart';
 
@@ -60,13 +61,15 @@ class HomeScreen extends ConsumerWidget {
     final header = CharacterHeader(character: ch, snap: snap, large: context.windowSize.atLeastExpanded);
 
     final daily = RpgCard(
-      child: Row(
+      child: Explain(
+        term: Term.dailyClear,
+        child: Row(
         children: [
           ProgressRing(
             value: dueToday.isEmpty ? 0 : doneToday / dueToday.length,
-            color: AppColors.success,
-            size: 72,
-            stroke: 6,
+            color: Theme.of(context).colorScheme.primary,
+            size: 64,
+            stroke: 3,
             child: Text('$doneToday/${dueToday.length}', style: AppText.number(15)),
           ),
           const SizedBox(width: Gap.md),
@@ -74,29 +77,30 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Прогресс дня', style: AppText.ui(15, weight: FontWeight.w700)),
+                Text('Сегодня', style: AppText.ui(15, weight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(
                   isRest
-                      ? 'Сегодня день отдыха — серия под защитой'
+                      ? 'День отдыха, серия сохранится'
                       : dueToday.isEmpty
                           ? 'Ежедневных заданий нет'
                           : doneToday == dueToday.length
-                              ? 'Все ежедневные задания выполнены!'
+                              ? 'Все ежедневные задания выполнены'
                               : 'Осталось ${dueToday.length - doneToday} '
                                   '${plural(dueToday.length - doneToday, 'задание', 'задания', 'заданий')}',
                   style: AppText.ui(13, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: Gap.xs),
                 Wrap(spacing: 6, runSpacing: 4, children: [
-                  Pill('+${snap.xpToday} XP сегодня', color: AppColors.violetBright, icon: Icons.auto_awesome_rounded),
+                  Explain(term: Term.xp, child: Pill('+${snap.xpToday} XP сегодня')),
                   if (snap.xpToday >= e.config.dailyXpSoftCap)
-                    const Pill('Дневной лимит XP', color: AppColors.warning),
+                    const Explain(term: Term.dailyCap, child: Pill('Дневной лимит XP')),
                 ]),
               ],
             ),
           ),
         ],
+      ),
       ),
     );
 
@@ -104,25 +108,15 @@ class HomeScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionHeader('Характеристики', action: 'Подробнее', onAction: () => context.go('/character')),
-        LayoutBuilder(builder: (context, c) {
-          final cols = c.maxWidth > 520 ? 3 : 2;
-          final w = (c.maxWidth - Gap.xs * (cols - 1)) / cols;
-          return Wrap(
-            spacing: Gap.xs,
-            runSpacing: Gap.xs,
+        RpgCard(
+          padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.xs),
+          child: Column(
             children: [
               for (final a in AttributeType.values)
-                SizedBox(
-                  width: w,
-                  child: AttributeTile(
-                    attribute: a,
-                    level: snap.attributeLevels[a]!,
-                    focus: ch.focus.contains(a),
-                  ),
-                ),
+                AttributeTile(attribute: a, level: snap.attributeLevels[a]!, focus: ch.focus.contains(a)),
             ],
-          );
-        }),
+          ),
+        ),
       ],
     );
 
@@ -134,15 +128,12 @@ class HomeScreen extends ConsumerWidget {
         if (openPenalties > 0) ...[
           RpgCard(
             padding: const EdgeInsets.all(Gap.sm),
-            borderColor: AppColors.warning.o(0.4),
             onTap: () => context.push('/profile/penalties'),
             child: Row(children: [
-              const Icon(Icons.healing_rounded, color: AppColors.warning),
-              const SizedBox(width: Gap.sm),
               Expanded(
                 child: Text(
-                  'Есть $openPenalties ${plural(openPenalties, 'пропуск', 'пропуска', 'пропусков')} — '
-                  'их можно восстановить или перенести',
+                  '$openPenalties ${plural(openPenalties, 'пропуск', 'пропуска', 'пропусков')}. '
+                  'Можно восстановить, перенести или указать причину.',
                   style: AppText.ui(13, color: AppColors.textSecondary),
                 ),
               ),
@@ -158,7 +149,7 @@ class HomeScreen extends ConsumerWidget {
               icon: Icons.done_all_rounded,
               title: dueToday.isEmpty ? 'Чистый лист' : 'Всё сделано',
               message: dueToday.isEmpty
-                  ? 'Создайте первое задание — опыт начнёт копиться.'
+                  ? 'Создайте первое задание, и опыт начнёт копиться.'
                   : 'Отличная работа. Можно отдохнуть или взять побочное задание.',
               actionLabel: 'Новое задание',
               onAction: () => openQuestEditor(context),
@@ -188,22 +179,26 @@ class HomeScreen extends ConsumerWidget {
     final streak = RpgCard(
       onTap: () => context.push('/profile/streaks'),
       child: Row(children: [
-        IconTile(Icons.local_fire_department_rounded, color: AppColors.warning, size: 48),
-        const SizedBox(width: Gap.md),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${snap.streak.current} ${plural(snap.streak.current, 'день', 'дня', 'дней')} подряд',
-                style: AppText.ui(16, weight: FontWeight.w700)),
-            Text('Рекорд: ${snap.streak.longest} · успешных дней: ${snap.streak.successfulDays}',
+          child: Explain(
+            term: Term.streak,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Серия: ${snap.streak.current} ${plural(snap.streak.current, 'день', 'дня', 'дней')}',
+                style: AppText.ui(15, weight: FontWeight.w600)),
+            Text('Рекорд ${snap.streak.longest} · успешных дней ${snap.streak.successfulDays}',
                 style: AppText.ui(12.5, color: AppColors.textMuted)),
           ]),
+          ),
         ),
-        TextButton(
+        Explain(
+          term: Term.restDay,
+          child: TextButton(
           onPressed: s.settings.vacationMode
               ? null
               : () => runGameAction(context, ref, (e, st) => e.toggleRestDay(st, today),
-                  success: isRest ? 'День отдыха отменён' : 'Сегодня — день отдыха. Серия под защитой'),
+                  success: isRest ? 'День отдыха отменён' : 'Сегодня день отдыха, серия сохранится'),
           child: Text(isRest ? 'Отменить отдых' : 'День отдыха'),
+          ),
         ),
       ]),
     );
@@ -219,33 +214,24 @@ class HomeScreen extends ConsumerWidget {
                 style: AppText.ui(13, color: AppColors.textSecondary)),
           )
         else
-          SizedBox(
-            height: 104,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: recentAch.length.clamp(0, 8),
-              separatorBuilder: (_, __) => const SizedBox(width: Gap.xs),
-              itemBuilder: (_, i) {
-                final def = achievementById[recentAch[i].achievementId];
-                if (def == null) return const SizedBox.shrink();
-                final c = AppColors.rarity(def.rarity);
-                return SizedBox(
-                  width: 132,
-                  child: RpgCard(
-                    padding: const EdgeInsets.all(Gap.sm),
-                    glow: c,
-                    onTap: () => context.push('/profile/achievements'),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Icon(RpgIcons.byKey(def.icon), color: c),
-                      const Spacer(),
-                      Text(def.title,
-                          maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(13, weight: FontWeight.w700)),
-                      Text(def.rarity.tag, style: AppText.ui(11, color: c, weight: FontWeight.w700)),
+          RpgCard(
+            padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.xs),
+            onTap: () => context.push('/profile/achievements'),
+            child: Column(children: [
+              for (final u in recentAch.take(3))
+                if (achievementById[u.achievementId] case final def?)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(children: [
+                      Expanded(child: Text(def.title, style: AppText.ui(14))),
+                      Explain(
+                        term: Term.rarity,
+                        child: Text(def.rarity.tag,
+                            style: AppText.ui(12.5, color: AppColors.rarity(def.rarity))),
+                      ),
                     ]),
                   ),
-                );
-              },
-            ),
+            ]),
           ),
       ],
     );
@@ -267,7 +253,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Expanded(
                     flex: 5,
-                    child: _col([header, daily, streak, attrs, achievements]),
+                    child: _col([header, const LongPressHint(), daily, streak, attrs, achievements]),
                   ),
                   const SizedBox(width: Gap.xl),
                   Expanded(flex: 6, child: _col([quests, if (missionsBlock != null) missionsBlock])),
@@ -280,6 +266,7 @@ class HomeScreen extends ConsumerWidget {
               padding: pad,
               child: _col([
                 header,
+                const LongPressHint(),
                 Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Expanded(child: daily),
                   const SizedBox(width: Gap.md),
@@ -295,7 +282,7 @@ class HomeScreen extends ConsumerWidget {
           return ListView(
             padding: pad,
             children: [
-              _col([header, daily, quests, if (missionsBlock != null) missionsBlock, attrs, streak, achievements]),
+              _col([header, const LongPressHint(), daily, quests, if (missionsBlock != null) missionsBlock, attrs, streak, achievements]),
             ],
           );
         }),
@@ -327,7 +314,7 @@ class _MissionTile extends ConsumerWidget {
     final value = boss
         ? e.progressFor(s, q.id, 'once') / q.targetAmount
         : (q.subtasks.isEmpty ? 0.0 : q.subtaskProgress);
-    final color = boss ? AppColors.danger : AppColors.gold;
+    final color = Theme.of(context).colorScheme.primary;
     return RpgCard(
       padding: const EdgeInsets.all(Gap.sm),
       onTap: () => context.push('/quests/${q.id}'),

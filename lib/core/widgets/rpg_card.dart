@@ -96,44 +96,35 @@ class SectionHeader extends StatelessWidget {
       );
 }
 
-/// Small rounded tag.
+/// Small text tag. No fill or icon; colour only when it carries meaning
+/// (a problem, the accent), otherwise secondary ink on a hairline outline.
 class Pill extends StatelessWidget {
   const Pill(this.text, {super.key, this.color = AppColors.textSecondary, this.icon, this.filled = false});
 
   final String text;
   final Color color;
+
+  /// Accepted for API compatibility; tags are text-only.
   final IconData? icon;
   final bool filled;
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: filled ? color.o(0.18) : color.o(0.08),
           borderRadius: BorderRadius.circular(Radii.pill),
-          border: Border.all(color: color.o(0.28)),
+          border: Border.all(color: filled ? color.o(0.6) : AppColors.border),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 12, color: color),
-              const SizedBox(width: 4),
-            ],
-            Flexible(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.ui(11.5, weight: FontWeight.w700, color: color),
-              ),
-            ),
-          ],
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppText.ui(11.5, weight: FontWeight.w500, color: color),
         ),
       );
 }
 
-/// Rounded icon tile used in lists and cards.
+/// Plain icon slot used in lists and cards (no coloured box).
 class IconTile extends StatelessWidget {
   const IconTile(this.icon, {super.key, required this.color, this.size = 40});
 
