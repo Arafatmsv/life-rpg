@@ -269,7 +269,7 @@ class _TreeCanvas extends ConsumerWidget {
         ),
         Positioned(
           right: Gap.md,
-          bottom: Gap.md,
+          bottom: Gap.md + MediaQuery.paddingOf(context).bottom,
           child: Column(children: [
             _ZoomButton(icon: Icons.add_rounded, tooltip: 'Приблизить', onTap: () => _zoom(1.25)),
             const SizedBox(height: 8),
@@ -284,7 +284,7 @@ class _TreeCanvas extends ConsumerWidget {
         ),
         Positioned(
           left: Gap.md,
-          bottom: Gap.md,
+          bottom: Gap.md + MediaQuery.paddingOf(context).bottom,
           child: Wrap(spacing: 8, children: [
             Pill('Открыт', color: color, filled: true),
             const Pill('Доступен', color: AppColors.gold),

@@ -133,7 +133,7 @@ class RewardsScreen extends ConsumerWidget {
           label: const Text('Награда'),
         ),
         body: AdaptiveBuilder(builder: (context, size, c) {
-          final pad = EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96);
+          final pad = EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96 + MediaQuery.paddingOf(context).bottom);
           return TabBarView(children: [
             ListView(padding: pad, children: [ContentWidth(child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [balance, const SizedBox(height: Gap.md), shop]))]),
             ListView(padding: pad, children: [ContentWidth(maxWidth: 760, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [history, const SizedBox(height: Gap.md), ledger]))]),
@@ -162,6 +162,8 @@ class _RewardRow extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 12),
         child: Row(children: [
+          IconTile(RpgIcons.byKey(r.icon), color: AppColors.textSecondary, size: 38),
+          const SizedBox(width: Gap.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.ui(15, weight: FontWeight.w500)),

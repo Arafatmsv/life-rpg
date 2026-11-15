@@ -72,7 +72,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
         label: Text(hasToday ? 'Сегодня' : 'Записать день'),
       ),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, 96),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, 96 + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 maxWidth: 820,

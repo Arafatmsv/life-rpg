@@ -41,6 +41,8 @@ class CharacterScreen extends ConsumerWidget {
         Text(ch.name, textAlign: TextAlign.center, style: AppText.display(34)),
         const SizedBox(height: 4),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(RpgIcons.characterClass(ch.characterClass), size: 16, color: AppColors.textMuted),
+          const SizedBox(width: 6),
           Text(ch.characterClass.label, style: AppText.ui(14, color: AppColors.textSecondary)),
         ]),
         const SizedBox(height: Gap.lg),
@@ -180,7 +182,7 @@ class CharacterScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Персонаж')),
       body: AdaptiveBuilder(builder: (context, size, c) {
-        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl);
+        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom);
         if (size.atLeastExpanded) {
           return SingleChildScrollView(
             padding: pad,

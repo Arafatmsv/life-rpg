@@ -33,6 +33,11 @@ class _RpgScaffoldState extends State<RpgScaffold> {
   @override
   Widget build(BuildContext context) {
     final fab = widget.floatingActionButton;
+    // On phones the shell's floating navigation bar overlaps the bottom of
+    // the page (it reports itself as extra bottom padding); lift the FAB
+    // above it. Tablets have no bottom bar, so the lift is zero there.
+    final mq = MediaQuery.of(context);
+    final barLift = (mq.padding.bottom - mq.viewPadding.bottom).clamp(0.0, 200.0);
     return Scaffold(
       appBar: widget.appBar,
       body: NotificationListener<UserScrollNotification>(onNotification: _onScroll, child: widget.body),
@@ -45,7 +50,10 @@ class _RpgScaffoldState extends State<RpgScaffold> {
               child: AnimatedOpacity(
                 opacity: _fabVisible ? 1 : 0,
                 duration: const Duration(milliseconds: 180),
-                child: IgnorePointer(ignoring: !_fabVisible, child: fab),
+                child: IgnorePointer(
+                  ignoring: !_fabVisible,
+                  child: Padding(padding: EdgeInsets.only(bottom: barLift), child: fab),
+                ),
               ),
             ),
     );

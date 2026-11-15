@@ -46,7 +46,7 @@ class PenaltySettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Последствия')),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 maxWidth: 760,

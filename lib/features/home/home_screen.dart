@@ -130,6 +130,8 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(Gap.sm),
             onTap: () => context.push('/profile/penalties'),
             child: Row(children: [
+              const Icon(Icons.healing_outlined, size: 20, color: AppColors.textSecondary),
+              const SizedBox(width: Gap.sm),
               Expanded(
                 child: Text(
                   '$openPenalties ${plural(openPenalties, 'пропуск', 'пропуска', 'пропусков')}. '
@@ -179,6 +181,8 @@ class HomeScreen extends ConsumerWidget {
     final streak = RpgCard(
       onTap: () => context.push('/profile/streaks'),
       child: Row(children: [
+        const IconTile(Icons.local_fire_department_outlined, color: AppColors.textSecondary, size: 40),
+        const SizedBox(width: Gap.md),
         Expanded(
           child: Explain(
             term: Term.streak,
@@ -223,6 +227,8 @@ class HomeScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Row(children: [
+                      Icon(RpgIcons.byKey(def.icon), size: 18, color: AppColors.textSecondary),
+                      const SizedBox(width: 10),
                       Expanded(child: Text(def.title, style: AppText.ui(14))),
                       Explain(
                         term: Term.rarity,
@@ -245,7 +251,7 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: AdaptiveBuilder(builder: (context, size, c) {
-          final pad = EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96);
+          final pad = EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96 + MediaQuery.paddingOf(context).bottom);
           if (size.atLeastExpanded) {
             return SingleChildScrollView(
               padding: pad,

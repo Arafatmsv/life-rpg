@@ -121,7 +121,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Профиль')),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 maxWidth: 980,
@@ -138,6 +138,8 @@ class ProfileScreen extends ConsumerWidget {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 14),
                             child: Row(children: [
+                              IconTile(items[k].icon, color: AppColors.textSecondary, size: 36),
+                              const SizedBox(width: Gap.md),
                               Expanded(
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   Text(items[k].title, style: AppText.ui(15, weight: FontWeight.w500)),

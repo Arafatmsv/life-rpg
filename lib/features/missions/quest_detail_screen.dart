@@ -1,3 +1,4 @@
+import '../../core/widgets/rpg_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,9 +62,11 @@ class QuestDetailScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
+              IconTile(RpgIcons.questType(q.type), color: AppColors.textSecondary, size: 44),
+              const SizedBox(width: Gap.md),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(q.type.label.toUpperCase(), style: AppText.label(color: AppColors.questType(q.type))),
+                  Text(q.type.label.toUpperCase(), style: AppText.label()),
                   const SizedBox(height: 2),
                   Text(q.title, style: AppText.display(26)),
                 ]),
@@ -274,7 +277,7 @@ class QuestDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(q.type.isMission ? 'Миссия' : 'Задание')),
       body: AdaptiveBuilder(builder: (context, size, c) {
-        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.sm, size.gutter, Gap.xxl);
+        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.sm, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom);
         if (size.atLeastExpanded) {
           return SingleChildScrollView(
             padding: pad,

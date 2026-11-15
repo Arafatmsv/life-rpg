@@ -42,13 +42,15 @@ class PenaltiesScreen extends ConsumerWidget {
         ],
       ),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 maxWidth: 820,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   RpgCard(
                     child: Row(children: [
+                      const IconTile(Icons.healing_outlined, color: AppColors.textSecondary, size: 40),
+                      const SizedBox(width: Gap.md),
                       Expanded(
                         child: Text(
                           s.settings.penaltiesEnabled

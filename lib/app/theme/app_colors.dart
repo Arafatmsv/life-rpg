@@ -88,12 +88,21 @@ abstract final class AppColors {
 
   static Color accentSecondary(AccentTheme a) => textSecondary;
 
-  /// Avatar frame tones: metals only.
+  /// Avatar frame tones: muted metals and earth/ink colours. Varied, but all
+  /// at a similar low saturation so none of them reads as neon or pastel.
   static const avatarPalette = [
     Color(0xFFC2A26B), // brass
     Color(0xFFB4B2AC), // silver
     Color(0xFFA97E5A), // bronze
     Color(0xFF7D7B76), // graphite
+    Color(0xFF8DA387), // sage
+    Color(0xFF8C9466), // moss
+    Color(0xFF7E93AB), // slate blue
+    Color(0xFF6E9C99), // steel teal
+    Color(0xFF9B829E), // dusty plum
+    Color(0xFFA3656C), // wine
+    Color(0xFFB97C5E), // terracotta
+    Color(0xFFC9B38E), // sand
   ];
 }
 

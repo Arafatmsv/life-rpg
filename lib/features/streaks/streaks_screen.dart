@@ -39,6 +39,8 @@ class StreaksScreen extends ConsumerWidget {
 
     final stats = RpgCard(
       child: Column(children: [
+        const Icon(Icons.local_fire_department_outlined, size: 28, color: AppColors.textSecondary),
+        const SizedBox(height: Gap.xs),
         Text('${st.current}', style: AppText.display(64)),
         Text('${plural(st.current, 'день', 'дня', 'дней')} подряд', style: AppText.ui(14, color: AppColors.textSecondary)),
         const SizedBox(height: Gap.md),
@@ -164,7 +166,7 @@ class StreaksScreen extends ConsumerWidget {
               for (var i = 0; i < w.length; i++) ...[if (i > 0) const SizedBox(height: Gap.md), w[i]],
             ]);
         return ListView(
-          padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+          padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
           children: [
             ContentWidth(
               child: size.atLeastExpanded

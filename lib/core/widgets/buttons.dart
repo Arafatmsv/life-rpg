@@ -6,9 +6,8 @@ import '../../app/theme/app_tokens.dart';
 
 enum RpgButtonKind { primary, secondary, ghost, danger }
 
-/// Flat button. Text only: the label says what happens, decorative icons
-/// and arrows are left out on purpose. [icon] is accepted for API
-/// compatibility but not drawn.
+/// Flat button: solid accent (primary), outline (secondary), text-only
+/// (ghost) or red outline (danger). An optional icon uses the text colour.
 class RpgButton extends StatelessWidget {
   const RpgButton({
     super.key,
@@ -42,12 +41,21 @@ class RpgButton extends StatelessWidget {
     final h = compact ? 38.0 : 48.0;
     final child = loading
         ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.6, color: fg))
-        : Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppText.ui(compact ? 14 : 15, weight: FontWeight.w500, color: fg),
-          );
+        : Row(mainAxisSize: MainAxisSize.min, children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: fg),
+              if (label.isNotEmpty) const SizedBox(width: 8),
+            ],
+            if (label.isNotEmpty)
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.ui(compact ? 14 : 15, weight: FontWeight.w500, color: fg),
+                ),
+              ),
+          ]);
     return Opacity(
       opacity: enabled ? 1 : 0.4,
       child: Semantics(
@@ -77,8 +85,8 @@ class RpgButton extends StatelessWidget {
   }
 }
 
-/// Selectable option for enums (difficulty, category…). Text only; the
-/// selected state is a light border and brighter text, not a colour fill.
+/// Selectable option for enums (difficulty, category…). The selected state
+/// is a light border and brighter text, not a colour fill.
 class ChoiceChipX extends StatelessWidget {
   const ChoiceChipX({
     super.key,
@@ -116,11 +124,17 @@ class ChoiceChipX extends StatelessWidget {
               borderRadius: Radii.rSm,
               border: Border.all(color: selected ? accent : AppColors.border),
             ),
-            child: Text(
-              label,
-              style: AppText.ui(13,
-                  weight: FontWeight.w500, color: selected ? AppColors.text : AppColors.textSecondary),
-            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: selected ? AppColors.text : AppColors.textMuted),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: AppText.ui(13,
+                    weight: FontWeight.w500, color: selected ? AppColors.text : AppColors.textSecondary),
+              ),
+            ]),
           ),
         ),
       ),

@@ -96,15 +96,14 @@ class SectionHeader extends StatelessWidget {
       );
 }
 
-/// Small text tag. No fill or icon; colour only when it carries meaning
-/// (a problem, the accent), otherwise secondary ink on a hairline outline.
+/// Small tag on a hairline outline. Colour only when it carries meaning
+/// (a problem, the accent), otherwise secondary ink.
 class Pill extends StatelessWidget {
   const Pill(this.text, {super.key, this.color = AppColors.textSecondary, this.icon, this.filled = false});
 
   final String text;
   final Color color;
 
-  /// Accepted for API compatibility; tags are text-only.
   final IconData? icon;
   final bool filled;
 
@@ -115,16 +114,25 @@ class Pill extends StatelessWidget {
           borderRadius: BorderRadius.circular(Radii.pill),
           border: Border.all(color: filled ? color.o(0.6) : AppColors.border),
         ),
-        child: Text(
-          text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppText.ui(11.5, weight: FontWeight.w500, color: color),
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (icon != null) ...[
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+          ],
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.ui(11.5, weight: FontWeight.w500, color: color),
+            ),
+          ),
+        ]),
       );
 }
 
-/// Plain icon slot used in lists and cards (no coloured box).
+/// Icon in a hairline square: one style for every icon in lists and
+/// cards. Monochrome; the colour argument is kept for API compatibility.
 class IconTile extends StatelessWidget {
   const IconTile(this.icon, {super.key, required this.color, this.size = 40});
 
@@ -133,9 +141,14 @@ class IconTile extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) => Container(
         width: size,
         height: size,
+        decoration: BoxDecoration(
+          color: AppColors.surface1,
+          borderRadius: Radii.rMd,
+          border: Border.all(color: AppColors.border),
+        ),
         child: Icon(icon, color: AppColors.textSecondary, size: size * 0.5),
       );
 }

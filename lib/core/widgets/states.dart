@@ -5,6 +5,7 @@ import '../../app/theme/app_theme.dart';
 import '../../app/theme/app_tokens.dart';
 import 'buttons.dart';
 import 'motion.dart';
+import 'rpg_card.dart';
 
 class EmptyState extends StatelessWidget {
   const EmptyState({
@@ -17,7 +18,6 @@ class EmptyState extends StatelessWidget {
     this.compact = false,
   });
 
-  /// Kept for API compatibility; empty states are text-only.
   final IconData icon;
   final String title;
   final String message;
@@ -31,6 +31,8 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconTile(icon, color: AppColors.textSecondary, size: compact ? 40 : 48),
+            const SizedBox(height: Gap.md),
             Text(title, textAlign: TextAlign.center, style: AppText.ui(compact ? 15 : 17, weight: FontWeight.w600)),
             const SizedBox(height: Gap.xs),
             ConstrainedBox(

@@ -51,7 +51,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Уведомления')),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 maxWidth: 760,

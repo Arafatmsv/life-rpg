@@ -380,8 +380,84 @@ class GameEngine {
         ));
       }
     }
+    _revokeUnearned(d, c, now, t);
     d.events.add(XpGained(-c.xp, c.attribute, 'Отмена выполнения'));
     return d.finish(this);
+  }
+
+  /// After an undo, takes back one-time rewards the player no longer
+  /// qualifies for: the day-clear bonus of that day, achievements whose
+  /// condition is no longer met and Gold for levels above the new level.
+  /// They can be earned again later.
+  void _revokeUnearned(_Draft d, QuestCompletion c, DateTime now, String t) {
+    final q = d.peek().quests[c.questId];
+    if (q != null && q.periodKind == PeriodKind.day && !q.isRecovery) {
+      _revokeBonus(d, c.dayKey, LedgerSource.dailyClear, now, t, 'Все задания дня');
+    }
+    // Revoked achievement XP can lower the level, which can un-meet more
+    // achievements; repeat until stable.
+    for (var i = 0; i < 4; i++) {
+      final snap = snapshot(d.peek());
+      var changed = false;
+      for (final a in achievementCatalog) {
+        if (!d.peek().achievements.containsKey(a.id) || a.isMet(snap)) continue;
+        d.removeAchievement(a.id);
+        _revokeBonus(d, a.id, LedgerSource.achievement, now, t, a.title);
+        changed = true;
+      }
+      if (!changed) break;
+    }
+    final level = snapshot(d.peek()).level.level;
+    final rewarded = d.peek().gold.values
+        .where((g) => g.source == LedgerSource.levelReward)
+        .map((g) => g.sourceId ?? '')
+        .toSet();
+    for (final l in rewarded) {
+      if ((int.tryParse(l) ?? 0) > level) {
+        _revokeBonus(d, l, LedgerSource.levelReward, now, t, 'Уровень $l');
+      }
+    }
+  }
+
+  /// Net amount still held from a one-time reward ([kind] minus reverts).
+  int _netXp(GameState s, String sourceId, LedgerSource kind) => s.xp.values
+      .where((x) => x.sourceId == sourceId && (x.source == kind || x.source == LedgerSource.revert))
+      .fold(0, (sum, x) => sum + x.amount);
+
+  int _netGold(GameState s, String sourceId, LedgerSource kind) => s.gold.values
+      .where((x) => x.sourceId == sourceId && (x.source == kind || x.source == LedgerSource.revert))
+      .fold(0, (sum, x) => sum + x.amount);
+
+  String _rewardId(GameState s, String base, int n) => _v5(s, n == 0 ? base : '$base:$n');
+
+  void _revokeBonus(_Draft d, String sourceId, LedgerSource kind, DateTime now, String t, String note) {
+    final st = d.peek();
+    final xp = _netXp(st, sourceId, kind);
+    if (xp > 0) {
+      final n = st.xp.values.where((x) => x.sourceId == sourceId && x.source == LedgerSource.revert).length;
+      d.addXp(XpTransaction(
+        id: _v5(st, 'revoke-xp:$sourceId:$n'),
+        amount: -xp,
+        source: LedgerSource.revert,
+        sourceId: sourceId,
+        note: note,
+        dayKey: t,
+        createdAt: now,
+      ));
+    }
+    final gold = _netGold(d.peek(), sourceId, kind);
+    if (gold > 0) {
+      final n = d.peek().gold.values.where((x) => x.sourceId == sourceId && x.source == LedgerSource.revert).length;
+      d.addGold(GoldTransaction(
+        id: _v5(st, 'revoke-gold:$sourceId:$n'),
+        amount: -gold,
+        source: LedgerSource.revert,
+        sourceId: sourceId,
+        note: note,
+        dayKey: t,
+        createdAt: now,
+      ));
+    }
   }
 
   // ───────────────────────────── rewards ─────────────────────────────
@@ -1013,8 +1089,10 @@ class GameEngine {
     final dailies = st.liveQuests
         .where((q) => q.periodKind == PeriodKind.day && !q.isRecovery && isDueToday(st, q))
         .toList();
-    final clearId = _v5(st, 'dailyclear:$t');
+    final clearPaid = st.xp.values.where((x) => x.sourceId == t && x.source == LedgerSource.dailyClear).length;
+    final clearId = _rewardId(st, 'dailyclear:$t', clearPaid);
     if (dailies.length >= 2 &&
+        _netXp(st, t, LedgerSource.dailyClear) <= 0 &&
         !st.xp.containsKey(clearId) &&
         dailies.every((q) => completionFor(st, q.id, 'd:$t') != null)) {
       d.addXp(XpTransaction(
@@ -1027,7 +1105,7 @@ class GameEngine {
         createdAt: now,
       ));
       d.addGold(GoldTransaction(
-        id: _v5(st, 'dailyclear-gold:$t'),
+        id: _rewardId(st, 'dailyclear-gold:$t', clearPaid),
         amount: config.dailyClearGold,
         source: LedgerSource.dailyClear,
         sourceId: t,
@@ -1046,9 +1124,15 @@ class GameEngine {
         if (d.peek().achievements.containsKey(a.id) || !a.isMet(snap)) continue;
         unlocked = true;
         final xp = config.rarityXp[a.rarity]!, gold = config.rarityGold[a.rarity]!;
+        final paidXp = d.peek().xp.values
+            .where((x) => x.sourceId == a.id && x.source == LedgerSource.achievement)
+            .length;
+        final paidGold = d.peek().gold.values
+            .where((x) => x.sourceId == a.id && x.source == LedgerSource.achievement)
+            .length;
         d.putAchievement(UnlockedAchievement(achievementId: a.id, unlockedAt: now));
         d.addXp(XpTransaction(
-          id: _v5(d.peek(), 'achievement-xp:${a.id}'),
+          id: _rewardId(d.peek(), 'achievement-xp:${a.id}', paidXp),
           amount: xp,
           source: LedgerSource.achievement,
           sourceId: a.id,
@@ -1057,7 +1141,7 @@ class GameEngine {
           createdAt: now,
         ));
         d.addGold(GoldTransaction(
-          id: _v5(d.peek(), 'achievement-gold:${a.id}'),
+          id: _rewardId(d.peek(), 'achievement-gold:${a.id}', paidGold),
           amount: gold,
           source: LedgerSource.achievement,
           sourceId: a.id,
@@ -1072,7 +1156,11 @@ class GameEngine {
 
     final after = snapshot(d.peek());
     for (var l = before.level.level + 1; l <= after.level.level; l++) {
-      final id = _v5(d.peek(), 'level-reward:$l');
+      if (_netGold(d.peek(), '$l', LedgerSource.levelReward) > 0) continue;
+      final paid = d.peek().gold.values
+          .where((g) => g.sourceId == '$l' && g.source == LedgerSource.levelReward)
+          .length;
+      final id = _rewardId(d.peek(), 'level-reward:$l', paid);
       if (d.peek().gold.containsKey(id)) continue;
       final g = config.levelRewardGold(l);
       d.addGold(GoldTransaction(
@@ -1225,6 +1313,11 @@ class _Draft {
   void putAchievement(UnlockedAchievement v) {
     (_achievements ??= {...base.achievements})[v.achievementId] = v;
     change(Tables.achievements, v.achievementId, v.toJson());
+  }
+
+  void removeAchievement(String id) {
+    (_achievements ??= {...base.achievements}).remove(id);
+    change(Tables.achievements, id, {'achievement_id': id, '_deleted': true});
   }
 
   void putDayMark(DayMark v) {

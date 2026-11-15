@@ -1,3 +1,4 @@
+import '../../core/widgets/rpg_icons.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -54,9 +55,11 @@ class AttributeDetailScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(Gap.lg),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
+          IconTile(RpgIcons.attribute(a), color: c, size: 48),
+          const SizedBox(width: Gap.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(a.code, style: AppText.label(color: c)),
+              Text(a.code, style: AppText.label()),
               Text(a.label, style: AppText.display(28)),
             ]),
           ),
@@ -165,7 +168,7 @@ class AttributeDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(a.label)),
       body: AdaptiveBuilder(builder: (context, size, cons) {
-        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl);
+        final pad = EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom);
         Widget col(List<Widget> w) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               for (var i = 0; i < w.length; i++) ...[if (i > 0) const SizedBox(height: Gap.md), w[i]],
             ]);

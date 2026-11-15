@@ -101,10 +101,19 @@ class CharacterHeader extends StatelessWidget {
           const SizedBox(height: Gap.md),
           Row(
             children: [
-              Expanded(child: _Stat(term: Term.gold, value: '${snap.gold}', label: 'Gold')),
-              Expanded(child: _Stat(term: Term.streak, value: '${snap.streak.current}', label: 'Серия')),
-              Expanded(child: _Stat(term: Term.rating, value: '${snap.rating}', label: 'Рейтинг')),
-              Expanded(child: _Stat(term: Term.sp, value: '${snap.skillPoints}', label: 'SP')),
+              Expanded(child: _Stat(term: Term.gold, icon: Icons.paid_outlined, value: '${snap.gold}', label: 'Gold')),
+              Expanded(
+                  child: _Stat(
+                      term: Term.streak,
+                      icon: Icons.local_fire_department_outlined,
+                      value: '${snap.streak.current}',
+                      label: 'Серия')),
+              Expanded(
+                  child: _Stat(
+                      term: Term.rating, icon: Icons.military_tech_outlined, value: '${snap.rating}', label: 'Рейтинг')),
+              Expanded(
+                  child: _Stat(
+                      term: Term.sp, icon: Icons.account_tree_outlined, value: '${snap.skillPoints}', label: 'SP')),
             ],
           ),
         ],
@@ -115,8 +124,9 @@ class CharacterHeader extends StatelessWidget {
 
 /// Number over a caption. Long-press explains it.
 class _Stat extends StatelessWidget {
-  const _Stat({required this.term, required this.value, required this.label});
+  const _Stat({required this.term, required this.icon, required this.value, required this.label});
   final Term term;
+  final IconData icon;
   final String value;
   final String label;
 
@@ -126,7 +136,11 @@ class _Stat extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: AppText.number(18, color: AppColors.text)),
+            Row(children: [
+              Icon(icon, size: 16, color: AppColors.textMuted),
+              const SizedBox(width: 6),
+              Text(value, style: AppText.number(18, color: AppColors.text)),
+            ]),
             const SizedBox(height: 2),
             Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppText.ui(12, color: AppColors.textMuted)),
           ],

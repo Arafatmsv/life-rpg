@@ -174,6 +174,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         RpgButton(
                           label: 'Назад',
                           kind: RpgButtonKind.secondary,
+                          icon: Icons.arrow_back_rounded,
 
                           onPressed: _busy ? null : _back,
                         ),
@@ -181,6 +182,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       Expanded(
                         child: RpgButton(
                           label: _step == _steps - 1 ? 'Начать путь' : 'Далее',
+                          icon: _step == _steps - 1 ? Icons.check_rounded : Icons.arrow_forward_rounded,
 
                           expand: true,
                           loading: _busy,
@@ -321,6 +323,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               borderColor: _class == c ? Theme.of(context).colorScheme.primary : null,
               child: Row(
                 children: [
+                  IconTile(RpgIcons.characterClass(c), color: AppColors.textSecondary, size: 42),
+                  const SizedBox(width: Gap.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,3 +1,4 @@
+import '../../core/widgets/rpg_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -136,7 +137,12 @@ class QuestCard extends ConsumerWidget {
                   // One quiet meta line instead of a row of coloured tags.
                   Explain(
                     info: questTypeInfo(q.type, e.config),
-                    child: Text(
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 1, right: 6),
+                        child: Icon(RpgIcons.questType(q.type), size: 14, color: AppColors.textMuted),
+                      ),
+                      Expanded(child: Text(
                       [
                         q.type.label,
                         q.attribute.label,
@@ -150,7 +156,8 @@ class QuestCard extends ConsumerWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppText.ui(12.5, color: AppColors.textMuted),
-                    ),
+                    )),
+                    ]),
                   ),
                   if (q.isRecovery || failed || (q.dueDay != null && q.periodKind == PeriodKind.once && !done)) ...[
                     const SizedBox(height: 6),

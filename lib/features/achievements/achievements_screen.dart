@@ -48,7 +48,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Достижения')),
       body: AdaptiveBuilder(builder: (context, size, c) => ListView(
-            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl),
+            padding: EdgeInsets.fromLTRB(size.gutter, Gap.xs, size.gutter, Gap.xxl + MediaQuery.paddingOf(context).bottom),
             children: [
               ContentWidth(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -110,6 +110,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 12),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Row(children: [
+                                  Icon(u == null ? Icons.lock_outline_rounded : RpgIcons.byKey(a.icon),
+                                      size: 18, color: u == null ? AppColors.textMuted : AppColors.textSecondary),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(a.title,
                                         maxLines: 1,

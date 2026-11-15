@@ -147,7 +147,7 @@ class _QuestList extends ConsumerWidget {
     }
     return AdaptiveBuilder(
       builder: (context, size, c) => ListView(
-        padding: EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96),
+        padding: EdgeInsets.fromLTRB(size.gutter, Gap.md, size.gutter, 96 + MediaQuery.paddingOf(context).bottom),
         children: [
           ContentWidth(
             child: ResponsiveColumns(

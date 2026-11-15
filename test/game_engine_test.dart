@@ -149,19 +149,53 @@ void main() {
       expect(engine.snapshot(s).stats.unitTotals[MetricUnit.pages], 10);
     });
 
-    test('revert compensates xp and gold and reopens the quest', () {
+    test('revert takes back quest reward and the achievement it unlocked', () {
       var s = add(start(), quest('a', type: QuestType.side));
       final xp0 = totalXp(s), gold0 = gold(s);
       s = engine.completeQuest(s, 'a').state;
+      expect(s.achievements.containsKey('first_step'), isTrue);
       final c = s.activeCompletions.single;
       s = engine.revertCompletion(s, c.id).state;
-      // Achievement reward is kept, quest reward is compensated.
-      expect(totalXp(s) - xp0, 5);
-      expect(gold(s) - gold0, 10);
+      // Everything the accidental tap gave is gone.
+      expect(totalXp(s), xp0);
+      expect(gold(s), gold0);
+      expect(s.achievements.containsKey('first_step'), isFalse);
       expect(s.quests['a']!.status, QuestStatus.active);
-      // Can be completed again, but with a new completion id.
+      // Doing it for real earns everything again, with new ledger ids.
       s = engine.completeQuest(s, 'a').state;
       expect(s.activeCompletions.single.id, isNot(c.id));
+      expect(s.achievements.containsKey('first_step'), isTrue);
+      expect(totalXp(s) - xp0, 25);
+      expect(gold(s) - gold0, 15);
+    });
+
+    test('revert removes the day-clear bonus; it returns when the day is cleared again', () {
+      var s = add(add(start(), quest('d1')), quest('d2'));
+      s = engine.completeQuest(s, 'd1').state;
+      s = engine.completeQuest(s, 'd2').state;
+      int clearXp(GameState st) => st.xp.values
+          .where((x) => x.sourceId == '2026-11-10' &&
+              (x.source == LedgerSource.dailyClear || x.source == LedgerSource.revert))
+          .fold(0, (a, x) => a + x.amount);
+      expect(clearXp(s), config.dailyClearXp);
+      final c = s.activeCompletions.firstWhere((x) => x.questId == 'd2');
+      s = engine.revertCompletion(s, c.id).state;
+      expect(clearXp(s), 0);
+      s = engine.completeQuest(s, 'd2').state;
+      expect(clearXp(s), config.dailyClearXp);
+    });
+
+    test('revert that drops the level takes back the level reward', () {
+      var s = add(start(), quest('m', type: QuestType.main, difficulty: Difficulty.hard));
+      final gold0 = gold(s);
+      s = engine.completeQuest(s, 'm').state;
+      expect(engine.snapshot(s).level.level, 2);
+      s = engine.revertCompletion(s, s.activeCompletions.single.id).state;
+      expect(engine.snapshot(s).level.level, 1);
+      expect(gold(s), gold0);
+      // Level 2 again pays its reward again.
+      final r = engine.completeQuest(s, 'm');
+      expect(r.events.whereType<LevelUp>().map((e) => e.level), contains(2));
     });
 
     test('daily soft cap halves xp above the limit', () {
