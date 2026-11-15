@@ -6,16 +6,16 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <!-- viewport-fit=cover: draw under the notch / home indicator; the app reads
-       the safe-area insets itself (see web_safe_area.dart). -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Life RPG — прокачивай персонажа, прокачивай себя в реальной жизни.">
   <meta name="theme-color" content="#0B0C10">
 
   <!-- iOS: installs from Safari via Share → Add to Home Screen. -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Opaque status bar. "black-translucent" makes iOS draw the app under the
+       status bar while Flutter maps touches from the old origin, so taps land
+       below the finger. Flutter also replaces any viewport meta at startup. -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Life RPG">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
