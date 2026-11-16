@@ -27,17 +27,22 @@
     html, body { margin: 0; height: 100%; background: #0E0E0F; overscroll-behavior: none; }
     #loader {
       position: fixed; inset: 0; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 18px;
-      color: #A6A9B3; font: 500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      align-items: center; justify-content: center; gap: 10px;
+      color: #C9C6BF; font: 500 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .01em;
     }
-    #loader img { width: 88px; height: 88px; border-radius: 22px; animation: pulse 1.6s ease-in-out infinite; }
+    #loader svg { width: 132px; height: 132px; animation: pulse 1.6s ease-in-out infinite; }
     @keyframes pulse { 50% { opacity: .55; transform: scale(.96); } }
-    @media (prefers-reduced-motion: reduce) { #loader img { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { #loader svg { animation: none; } }
   </style>
 </head>
 <body>
   <div id="loader">
-    <img src="icons/Icon-192.png" alt="">
+    <!-- Same geometry as BrandMark in lib/core/widgets/brand_mark.dart. -->
+    <svg viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="#C2A26B" stroke-width="11" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M22 49 L50 25 L78 49"/>
+      <path d="M22 75 L50 51 L78 75"/>
+    </svg>
     <div>Загрузка мира…</div>
   </div>
   <script src="flutter_bootstrap.js" async></script>

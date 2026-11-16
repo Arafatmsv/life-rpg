@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,6 +48,12 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
   return GoRouter(
     initialLocation: '/home',
+    // iOS home-screen web app: in-app pages must not create browser history
+    // entries. Otherwise the edge swipe runs Safari's own back animation
+    // (a stale snapshot of the previous page) and then Flutter's route
+    // transition on top of it, which shows two overlapping pages and stutters.
+    // Back navigation stays with Flutter: the back arrow and the edge swipe.
+    routerNeglect: kIsWeb && defaultTargetPlatform == TargetPlatform.iOS,
     refreshListenable: refresh,
     redirect: (context, state) {
       final session = ref.read(sessionProvider);
