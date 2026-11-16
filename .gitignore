@@ -49,3 +49,6 @@ env.json
 
 # Local tooling
 .claude/
+
+# Promo video renders
+promo/
